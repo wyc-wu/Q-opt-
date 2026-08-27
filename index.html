@@ -1,0 +1,2437 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>尚琳廚苑 ✦ 智慧午餐蛋白質追蹤系統</title>
+  <meta name="description" content="企業智慧午餐訂餐系統，結合 AI 推薦與每週蛋白質追蹤" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'Noto Sans TC', 'system-ui', 'sans-serif'] },
+          colors: {
+            brand: { 50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0', 300: '#86efac', 400: '#4ade80', 500: '#22c55e', 600: '#16a34a', 700: '#15803d', 800: '#166534', 900: '#14532d' },
+            slate: { 750: '#293548', 850: '#172033', 950: '#0b1120' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    [v-cloak] {
+      display: none !important;
+    }
+
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #334155 #0f172a;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 3px;
+    }
+
+    body {
+      font-family: 'Inter', 'Noto Sans TC', system-ui, sans-serif;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+      }
+
+      to {
+        transform: translateX(0);
+      }
+    }
+
+    @keyframes slideOutRight {
+      from {
+        transform: translateX(0);
+      }
+
+      to {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes pulse-green {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, .4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+      }
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: -200% 0;
+      }
+
+      100% {
+        background-position: 200% 0;
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        transform: scale(0.3);
+        opacity: 0;
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      70% {
+        transform: scale(0.9);
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes barGrow {
+      from {
+        height: 0;
+      }
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes dotPulse {
+
+      0%,
+      80%,
+      100% {
+        transform: scale(0);
+      }
+
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    @keyframes confetti {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-80px) rotate(720deg);
+        opacity: 0;
+      }
+    }
+
+    .fade-in-up {
+      animation: fadeInUp 0.5s ease-out both;
+    }
+
+    .slide-in-right {
+      animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .slide-out-right {
+      animation: slideOutRight 0.3s ease-in both;
+    }
+
+    .pulse-green {
+      animation: pulse-green 2s infinite;
+    }
+
+    .bounce-in {
+      animation: bounceIn 0.6s ease-out both;
+    }
+
+    .bar-grow {
+      animation: barGrow 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+
+    .shimmer-bg {
+      background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .glass {
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+    }
+
+    .protein-bar {
+      transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.4s ease;
+    }
+
+    .dot-pulse span {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      margin: 0 3px;
+      animation: dotPulse 1.4s infinite ease-in-out both;
+    }
+
+    .dot-pulse span:nth-child(1) {
+      animation-delay: -0.32s;
+    }
+
+    .dot-pulse span:nth-child(2) {
+      animation-delay: -0.16s;
+    }
+
+    .tab-indicator {
+      transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1), width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .upload-zone {
+      border: 2px dashed #475569;
+      transition: all 0.3s ease;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.active {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    .teams-bubble {
+      background: linear-gradient(135deg, #464EB8 0%, #5B5FC7 100%);
+    }
+
+    .teams-card {
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      animation: confetti 1s ease-out forwards;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div id="app" v-cloak>
+
+    <!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
+    <transition name="fade">
+      <div v-if="!isLoggedIn" class="fixed inset-0 z-[100] bg-slate-950 flex items-center justify-center p-4"
+        style="background-image: radial-gradient(circle at top right, rgba(16,185,129,0.1), transparent 40%);">
+        <div class="bg-slate-900 border border-slate-700/60 rounded-3xl shadow-2xl p-8 max-w-sm w-full fade-in-up">
+          <div class="text-center mb-8">
+            <div
+              class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-4">
+              <i class="fa-solid fa-leaf text-white text-3xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-white mb-1">智饗</h1>
+            <p class="text-xs text-emerald-400 font-semibold tracking-widest uppercase">Q-opt</p>
+          </div>
+          <!-- Login / Register Tabs -->
+          <div class="flex border-b border-slate-700/60 mb-6">
+            <button @click="isRegisterMode = false"
+              :class="!isRegisterMode ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400'"
+              class="flex-1 py-2 font-bold transition-all">登入</button>
+            <button @click="isRegisterMode = true"
+              :class="isRegisterMode ? 'text-emerald-400 border-b-2 border-emerald-400' : 'text-slate-400'"
+              class="flex-1 py-2 font-bold transition-all">註冊新工號</button>
+          </div>
+
+          <form v-if="!isRegisterMode" @submit.prevent="login" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">員工工號</label>
+              <input v-model="loginId" type="text" placeholder="例如：11112345" maxlength="8" required
+                class="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">密碼</label>
+              <input v-model="loginPassword" type="password" placeholder="請輸入密碼" required
+                class="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+            <p v-if="loginError" class="text-red-400 text-xs text-center mt-1">{{loginError}}</p>
+            <button type="submit"
+              class="w-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold py-3 rounded-xl shadow-lg mt-4">
+              <i class="fa-solid fa-arrow-right-to-bracket"></i> 登入系統
+            </button>
+          </form>
+
+          <form v-if="isRegisterMode" @submit.prevent="register" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">員工工號 (8碼)</label>
+              <input v-model="registerId" type="text" placeholder="例如：11112345" maxlength="8" required
+                class="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">姓名暱稱 (選填)</label>
+              <input v-model="registerName" type="text" placeholder="例如：開發部 王小明"
+                class="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-300 mb-1.5">設定密碼</label>
+              <input v-model="registerPassword" type="password" placeholder="請設定密碼" required
+                class="w-full bg-slate-800/80 border border-slate-600/50 rounded-xl py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+            </div>
+            <p v-if="registerError" class="text-red-400 text-xs text-center mt-1">{{registerError}}</p>
+            <button type="submit"
+              class="w-full bg-blue-500 hover:bg-blue-400 text-white font-bold py-3 rounded-xl shadow-lg mt-4">
+              <i class="fa-solid fa-user-plus"></i> 註冊並登入
+            </button>
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ═══════════════ MAIN APP ═══════════════ -->
+    <div v-show="isLoggedIn">
+      <!-- ═══════════════ STICKY HEADER ═══════════════ -->
+      <header class="sticky top-0 z-50 glass border-b border-slate-700/50">
+        <!-- Top Bar -->
+        <div class="max-w-5xl mx-auto px-4 py-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div
+              class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+              <i class="fa-solid fa-leaf text-white text-sm"></i>
+            </div>
+            <div>
+              <h1
+                class="text-base font-bold tracking-tight bg-gradient-to-r from-emerald-300 to-emerald-500 bg-clip-text text-transparent">
+                智饗</h1>
+              <p class="text-[10px] text-slate-400 -mt-0.5 tracking-wide">Q-opt</p>
+            </div>
+          </div>
+          <!-- User Menu -->
+          <div class="relative">
+            <button @click="showUserMenu = !showUserMenu"
+              class="flex items-center gap-2 bg-slate-800/80 hover:bg-slate-700/80 pl-3 pr-3.5 py-1.5 rounded-full border border-slate-600/50 transition-all text-sm group">
+              <span class="text-base">👤</span>
+              <span class="text-slate-300 group-hover:text-white transition-colors">工號：<span
+                  class="font-semibold text-emerald-400">{{currentUser.id}}</span></span>
+              <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 ml-0.5 transition-transform"
+                :class="{'rotate-180': showUserMenu}"></i>
+            </button>
+            <!-- User Dropdown -->
+            <div v-if="showUserMenu"
+              class="absolute right-0 top-10 bg-slate-800 border border-slate-600/60 rounded-xl shadow-2xl shadow-black/40 p-1.5 min-w-[200px] z-50 fade-in-up">
+              <div class="px-3 py-2 border-b border-slate-700/60 mb-1">
+                <p class="text-xs text-slate-400">目前登入帳號</p>
+                <p class="text-sm font-bold text-white">{{currentUser.id}} ({{currentUser.name}})</p>
+              </div>
+              <button v-if="currentUser.role === 'admin'"
+                @click="fetchAdminOrders(); showDbModal = true; showUserMenu = false"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm text-emerald-400 hover:bg-slate-700 flex items-center gap-2 transition-colors">
+                <i class="fa-solid fa-database text-emerald-400"></i> 📊 訂單資料庫紀錄
+              </button>
+              <button @click="logout"
+                class="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-slate-700 hover:text-red-300 flex items-center gap-2 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> 登出帳號
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ═══ Order Time Window Banner ═══ -->
+      <div class="max-w-5xl mx-auto px-4 pt-1.5 pb-2">
+        <div
+          class="flex items-center justify-between px-3 py-1.5 rounded-xl text-xs font-semibold transition-all bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2 w-2">
+              <span
+                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span>訂餐開放中 (全天開放無時間限制)</span>
+          </div>
+          <span class="opacity-80 font-mono">全天開放</span>
+        </div>
+      </div>
+
+      <!-- ═══ Weekly Protein Tracker ═══ -->
+      <div class="max-w-5xl mx-auto px-4 pb-3">
+        <div class="flex items-center justify-between mb-2">
+          <button @click="showProteinTracker = !showProteinTracker"
+            class="text-xs font-semibold text-slate-400 hover:text-white tracking-wider uppercase flex items-center gap-1.5 transition-colors">
+            <i class="fa-solid fa-chart-column text-emerald-500"></i> 每週蛋白質達標追蹤
+            <i class="fa-solid fa-chevron-down text-[10px] ml-1 transition-transform"
+              :class="{'rotate-180': showProteinTracker}"></i>
+          </button>
+        </div>
+
+        <transition name="fade-in-up">
+          <div v-show="showProteinTracker">
+            <div class="mb-3 rounded-2xl border border-slate-700/50 bg-slate-900/50 p-3">
+              <div class="flex items-center justify-between gap-2 mb-2">
+                <div>
+                  <p class="text-[10px] uppercase tracking-[0.3em] text-slate-500">蛋白質建議</p>
+                  <p class="text-sm font-semibold text-white">依據醫療院所與營養建議，輸入體重後可參考每日目標</p>
+                </div>
+              </div>
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-end">
+                <div class="flex-1">
+                  <label class="block text-[11px] text-slate-400 mb-1">您的體重（公斤）</label>
+                  <input v-model.number="bodyWeight" type="number" min="30" max="180" step="1" placeholder="例如 65"
+                    class="w-full rounded-xl border border-slate-700 bg-slate-800/70 px-3 py-2 text-sm text-white focus:border-emerald-500 focus:outline-none" />
+                </div>
+                <div class="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-3 py-2 min-w-[140px]">
+                  <p class="text-[10px] text-emerald-300">建議蛋白質</p>
+                  <p class="text-lg font-bold text-emerald-400">{{ recommendedProtein }}g / 天</p>
+                </div>
+              </div>
+              <p class="mt-2 text-[11px] text-slate-500">參考公式：每公斤體重約 1.0–1.2g 蛋白質，作為日常參考值。</p>
+            </div>
+
+            <div class="flex justify-end items-center gap-2 mb-2">
+              <!-- Goal Setting Button -->
+              <div class="relative">
+                <button @click="showGoalSetting = !showGoalSetting"
+                  class="text-xs bg-slate-700/60 hover:bg-slate-600/80 text-slate-300 hover:text-white px-3 py-1 rounded-full border border-slate-600/40 transition-all flex items-center gap-1.5"
+                  title="每日蛋白質目標">
+                  <i class="fa-solid fa-bullseye text-emerald-400"></i> 目標 {{proteinGoal}}g <i
+                    class="fa-solid fa-pen text-[8px] text-slate-500 ml-0.5"></i>
+                </button>
+                <!-- Goal Setting Popover -->
+                <div v-if="showGoalSetting"
+                  class="absolute right-0 top-9 bg-slate-800 border border-slate-600/60 rounded-xl shadow-2xl shadow-black/50 p-4 w-72 z-50 fade-in-up">
+                  <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-1.5"><i
+                        class="fa-solid fa-bullseye text-emerald-400"></i> 每日蛋白質目標</h3>
+                    <button @click="showGoalSetting = false"
+                      class="w-6 h-6 rounded-md hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors text-xs"><i
+                        class="fa-solid fa-xmark"></i></button>
+                  </div>
+                  <p class="text-[10px] text-slate-500 mb-3">選擇適合你的每日蛋白質攝取目標（克）</p>
+                  <!-- Quick Presets -->
+                  <div class="flex gap-1.5 mb-3">
+                    <button v-for="g in [25,30,35,40,50]" :key="g" @click="customProteinGoal = g"
+                      class="flex-1 py-1.5 rounded-lg text-xs font-bold border transition-all"
+                      :class="customProteinGoal === g ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 shadow-md shadow-emerald-500/10' : 'bg-slate-700/50 border-slate-600/30 text-slate-400 hover:text-slate-200 hover:border-slate-500'">
+                      {{g}}g
+                    </button>
+                  </div>
+                  <!-- Slider -->
+                  <div class="mb-3">
+                    <input type="range" v-model.number="customProteinGoal" min="10" max="80" step="1"
+                      class="w-full h-1.5 rounded-full appearance-none cursor-pointer"
+                      style="accent-color: #22c55e; background: linear-gradient(to right, #334155, #334155);" />
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>10g</span><span>80g</span>
+                    </div>
+                  </div>
+                  <!-- Current Value Display -->
+                  <div class="bg-slate-900/60 rounded-lg p-2.5 text-center border border-slate-700/40">
+                    <span class="text-2xl font-black text-emerald-400">{{proteinGoal}}</span><span
+                      class="text-sm text-emerald-400/70 font-semibold">g</span>
+                    <p class="text-[10px] text-slate-500 mt-0.5"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 rounded-2xl border border-slate-700/40 bg-slate-900/40 p-3">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <p class="text-[10px] uppercase tracking-[0.25em] text-slate-500">本週進度</p>
+                  <p class="text-sm font-semibold text-white">{{ weeklyProteinTotal }}g / {{ weeklyGoalTotal }}g</p>
+                </div>
+                <div class="text-right">
+                  <p class="text-[10px] text-slate-500">今日</p>
+                  <p class="text-2xl font-black"
+                    :class="todayProtein >= proteinGoal ? 'text-amber-400' : 'text-slate-300'">{{ todayProtein }}g</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-7 gap-2">
+                <div v-for="day in weekDays" :key="day.label" class="flex flex-col items-center gap-2">
+                  <div class="w-full h-24 rounded-xl bg-slate-800/70 p-1.5 flex items-end">
+                    <div class="w-full rounded-lg transition-all duration-500"
+                      :class="day.isToday ? 'bg-gradient-to-t from-emerald-500 to-emerald-400 shadow-[0_0_0_1px_rgba(255,255,255,0.12)]' : 'bg-gradient-to-t from-slate-600 to-slate-500'"
+                      :style="{ height: Math.max(8, Math.round((day.protein / maxBarValue) * 100)) + '%' }"></div>
+                  </div>
+                  <div class="text-center">
+                    <p class="text-[10px] text-slate-400">{{ day.label }}</p>
+                    <p class="text-[11px] font-semibold" :class="day.isToday ? 'text-emerald-400' : 'text-slate-300'">{{
+                      day.protein }}g</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-3 flex items-center justify-between text-[10px] text-slate-400">
+                <span>目標值會隨每日攝取量自動調整</span>
+                <span :class="todayProtein >= proteinGoal ? 'text-amber-400' : 'text-slate-400'">{{ todayProtein >=
+                  proteinGoal ? '今天已達目標' : '今日仍差 ' + (proteinGoal - todayProtein) + 'g' }}</span>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </div>
+
+      <!-- 今日點單 (直接顯示於首頁) -->
+      <div v-if="todayOrderList.length > 0" class="max-w-5xl mx-auto px-4 pb-6">
+        <h4 class="text-sm font-semibold text-slate-300 mb-3 flex items-center gap-2">📋 今日點單紀錄</h4>
+        <div class="space-y-3">
+          <div v-for="(order, idx) in todayOrderList" :key="idx"
+            class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+            <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-700/50">
+              <span class="text-xs text-slate-400">{{ order.time }}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400">{{ order.status
+                }}</span>
+            </div>
+            <div v-for="(item, i) in order.items" :key="i" class="flex justify-between items-center py-1">
+              <span class="text-sm text-slate-300">{{ item.name }} x{{ item.qty || 1 }}</span>
+            </div>
+            <div class="mt-3 pt-3 border-t border-slate-700/50 flex justify-between items-center">
+              <div class="flex gap-3">
+                <span class="text-sm font-bold text-amber-400">{{ order.totalProtein }}g 蛋白</span>
+                <span class="text-sm font-bold text-white">${{ order.totalPrice }}</span>
+              </div>
+              <div class="flex gap-2">
+                <button @click="editOrder(order)"
+                  class="text-xs px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition border border-blue-500/20">✏️
+                  修改</button>
+                <button @click="deleteOrder(order.id)"
+                  class="text-xs px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition border border-rose-500/20">🗑️
+                  取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ Tab Navigation ═══ -->
+      <div class="max-w-5xl mx-auto px-4">
+        <div class="flex gap-0.5 relative border-b border-slate-700/40">
+          <button v-for="(tab, i) in tabs" :key="tab.id" :ref="el => { if(el) tabRefs[i] = el }"
+            @click="activeTab = tab.id"
+            class="relative px-4 py-2.5 text-sm font-medium transition-colors whitespace-nowrap"
+            :class="activeTab === tab.id ? 'text-emerald-400' : 'text-slate-400 hover:text-slate-200'">
+            <span>{{tab.icon}} {{tab.label}}</span>
+          </button>
+          <div
+            class="absolute bottom-0 h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full tab-indicator"
+            :style="tabIndicatorStyle"></div>
+        </div>
+      </div>
+      </header>
+
+      <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+      <main class="max-w-5xl mx-auto px-4 pb-32 mt-1">
+
+        <!-- ══════ TAB 0: Home Dashboard ══════ -->
+        <section v-show="activeTab === 'home'" class="fade-in-up mt-6">
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Quick Order Card -->
+            <div @click="activeTab = 'order'"
+              class="bg-gradient-to-br from-emerald-900/40 to-slate-800/40 rounded-3xl p-6 border border-emerald-500/20 card-hover cursor-pointer group flex flex-col items-center justify-center min-h-[240px] text-center shadow-xl shadow-black/20">
+              <div
+                class="w-20 h-20 rounded-2xl bg-emerald-500/20 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-emerald-500/20">
+                ⚡
+              </div>
+              <h2 class="text-2xl font-bold text-white mb-2">快速點餐</h2>
+              <p class="text-sm text-slate-400">瀏覽完整菜單，挑選你喜愛的高蛋白餐點，並支援分類與快速過濾。</p>
+            </div>
+            <!-- AI Recommend Card -->
+            <div @click="activeTab = 'ai'"
+              class="bg-gradient-to-br from-indigo-900/40 to-slate-800/40 rounded-3xl p-6 border border-indigo-500/20 card-hover cursor-pointer group flex flex-col items-center justify-center min-h-[240px] text-center shadow-xl shadow-black/20">
+              <div
+                class="w-20 h-20 rounded-2xl bg-indigo-500/20 flex items-center justify-center text-4xl mb-4 group-hover:scale-110 transition-transform shadow-inner shadow-indigo-500/20">
+                🤖
+              </div>
+              <h2 class="text-2xl font-bold text-white mb-2">AI 今日推薦</h2>
+              <p class="text-sm text-slate-400">不知道吃什麼？讓 AI 根據你的營養目標與偏好，為你專屬推薦完美餐點。</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════ TAB 1: Quick Order ══════ -->
+        <section v-show="activeTab === 'order'" class="fade-in-up">
+          <!-- Re-order Banner (根據一週最常點動態推薦) -->
+          <div
+            class="mt-4 bg-gradient-to-r from-emerald-900/40 via-emerald-800/30 to-slate-800/40 rounded-2xl p-4 border border-emerald-500/20 card-hover cursor-pointer"
+            @click="quickReorder">
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <img v-if="mostFrequentItem7Days.image" :src="mostFrequentItem7Days.image"
+                    class="w-full h-full object-cover rounded-xl" :alt="mostFrequentItem7Days.name" />
+                  <span v-else class="text-2xl">{{ mostFrequentItem7Days.emoji }}</span>
+                </div>
+                <div>
+                  <p class="text-xs text-emerald-400/90 font-semibold mb-0.5 flex items-center gap-1">
+                    <i class="fa-solid fa-clock-rotate-left"></i> {{ mostFrequentItem7Days.label }}
+                  </p>
+                  <p class="text-sm font-bold text-white">{{ mostFrequentItem7Days.name }}</p>
+                  <p class="text-xs text-slate-400 mt-0.5">${{ mostFrequentItem7Days.price }} ｜ <span
+                      class="text-emerald-400 font-semibold">💪 {{ mostFrequentItem7Days.protein }}g 蛋白</span></p>
+                </div>
+              </div>
+              <button
+                class="bg-emerald-500 hover:bg-emerald-400 text-white font-bold px-5 py-2.5 rounded-xl text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-95 flex items-center gap-1.5 flex-shrink-0">
+                <i class="fa-solid fa-bolt"></i> 一鍵快速再訂
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Tags -->
+          <div class="mt-4 flex flex-wrap items-center gap-2">
+            <button v-for="tag in filterTags" :key="tag.id" @click="toggleFilter(tag.id)"
+              class="px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all active:scale-95"
+              :class="activeFilter === tag.id ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400 shadow-lg shadow-emerald-500/10' : 'bg-slate-800/60 border-slate-600/40 text-slate-400 hover:text-slate-200 hover:border-slate-500'">
+              {{tag.icon}} {{tag.label}}
+            </button>
+            <div class="relative flex-1 min-w-[180px]">
+              <i
+                class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+              <input v-model="searchQuery" type="text" placeholder="搜尋餐點..."
+                class="w-full bg-slate-800/60 border border-slate-600/40 rounded-full pl-8 pr-4 py-1.5 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/20 transition-all" />
+            </div>
+          </div>
+
+
+
+          <!-- Menu Grid -->
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div v-for="(item, idx) in filteredMenu" :key="item.id"
+              class="bg-slate-800/60 rounded-2xl border border-slate-700/40 overflow-hidden card-hover fade-in-up"
+              :style="{animationDelay: (idx * 0.06) + 's'}"
+              :class="{'opacity-50 pointer-events-none grayscale': item.soldOut}">
+              <!-- Image -->
+              <div class="relative h-36 overflow-hidden bg-slate-700">
+                <img v-if="item.image" :src="item.image" :alt="item.name"
+                  class="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+                <div v-else class="absolute inset-0 flex items-center justify-center text-5xl">{{item.emoji}}</div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                <!-- Protein Badge -->
+                <div
+                  class="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] font-bold"
+                  :class="item.protein >= 40 ? 'text-emerald-400' : 'text-slate-300'">
+                  💪 {{item.protein}}g
+                </div>
+                <!-- Sold Out -->
+                <div v-if="item.soldOut" class="absolute inset-0 bg-slate-900/70 flex items-center justify-center">
+                  <span
+                    class="bg-red-500/90 text-white text-xs font-bold px-4 py-1.5 rounded-full -rotate-12 shadow-lg">SOLD
+                    OUT</span>
+                </div>
+              </div>
+              <!-- Info -->
+              <div class="p-3.5">
+                <h3 class="font-bold text-sm text-white mb-1">{{item.name}}</h3>
+                <p class="text-[11px] text-slate-400 mb-2 leading-relaxed line-clamp-2 min-h-[32px]">{{item.desc}}</p>
+                <div class="flex items-center justify-between">
+                  <span class="text-lg font-bold text-emerald-400">${{item.price}}</span>
+                  <button v-if="!item.soldOut && isOrderWindow" @click="addToCart(item)"
+                    class="bg-emerald-500 hover:bg-emerald-400 text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm shadow-md shadow-emerald-500/20 transition-all active:scale-90">
+                    <i class="fa-solid fa-plus"></i>
+                  </button>
+                  <button v-else-if="!item.soldOut && !isOrderWindow"
+                    class="bg-slate-700 text-slate-500 w-8 h-8 rounded-xl flex items-center justify-center text-sm cursor-not-allowed"
+                    title="訂餐時段外，無法下單">
+                    <i class="fa-solid fa-lock text-[10px]"></i>
+                  </button>
+                  <span v-else class="text-xs text-slate-500 font-medium">已完售</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ══════ TAB 2: AI Recommend ══════ -->
+        <section v-show="activeTab === 'ai'" class="fade-in-up">
+          <div class="mt-5 max-w-lg mx-auto">
+            <div class="text-center mb-6">
+              <div
+                class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-violet-500/20 to-emerald-500/20 border border-emerald-500/20 flex items-center justify-center text-3xl mb-3">
+                🤖</div>
+              <h2
+                class="text-xl font-bold bg-gradient-to-r from-violet-300 to-emerald-400 bg-clip-text text-transparent">
+                AI 智慧推薦引擎</h2>
+              <p class="text-xs text-slate-400 mt-1">根據您的營養需求與口味偏好精準定位</p>
+            </div>
+
+            <!-- Step 1 -->
+            <div class="bg-slate-800/60 rounded-2xl border border-slate-700/40 p-4 mb-3">
+              <p class="text-xs font-semibold text-slate-400 mb-2.5 flex items-center gap-1.5">
+                <span
+                  class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold">1</span>
+                蛋白質目標
+              </p>
+              <div class="grid grid-cols-3 gap-2">
+                <button v-for="opt in proteinOptions" :key="opt.id" @click="aiProtein = opt.id"
+                  class="py-2.5 rounded-xl text-xs font-semibold border transition-all"
+                  :class="aiProtein === opt.id ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400' : 'bg-slate-700/40 border-slate-600/30 text-slate-400 hover:text-slate-200'">
+                  {{opt.label}}
+                </button>
+              </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="bg-slate-800/60 rounded-2xl border border-slate-700/40 p-4 mb-4">
+              <p class="text-xs font-semibold text-slate-400 mb-2.5 flex items-center gap-1.5">
+                <span
+                  class="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold">2</span>
+                主菜偏好
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <button v-for="pref in prefOptions" :key="pref.id" @click="aiPref = pref.id"
+                  class="px-3.5 py-2 rounded-xl text-xs font-semibold border transition-all"
+                  :class="aiPref === pref.id ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400' : 'bg-slate-700/40 border-slate-600/30 text-slate-400 hover:text-slate-200'">
+                  {{pref.icon}} {{pref.label}}
+                </button>
+              </div>
+            </div>
+
+            <!-- AI Button -->
+            <button @click="runAI" :disabled="aiLoading"
+              class="w-full py-3.5 rounded-2xl font-bold text-sm transition-all active:scale-[0.98] shadow-xl flex items-center justify-center gap-2"
+              :class="aiLoading ? 'bg-slate-700 text-slate-400 cursor-wait' : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white shadow-emerald-500/25'">
+              <template v-if="aiLoading">
+                <div class="dot-pulse"><span></span><span></span><span></span></div> AI 分析中...
+              </template>
+              <template v-else>
+                <i class="fa-solid fa-magnifying-glass"></i> 🔍 AI 立即定位今日午餐
+              </template>
+            </button>
+
+            <!-- AI Result -->
+            <div v-if="aiResult" class="mt-5 bounce-in">
+              <div
+                class="bg-gradient-to-br from-slate-800/80 to-slate-800/40 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-xl shadow-emerald-500/5">
+                <div class="h-48 relative overflow-hidden bg-slate-800">
+                  <img :src="aiResult.image" :alt="aiResult.name"
+                    class="w-full h-full object-cover transition-transform duration-500 hover:scale-105">
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                  <div class="absolute top-3 left-3 flex items-center gap-1.5">
+                    <span
+                      class="bg-emerald-500 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow">
+                      <i class="fa-solid fa-robot"></i> AI 推薦
+                    </span>
+                    <span v-if="aiResult.noExactMatch"
+                      class="bg-amber-500/90 text-white px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 shadow">
+                      <i class="fa-solid fa-triangle-exclamation"></i> 最接近選項
+                    </span>
+                  </div>
+                  <div
+                    class="absolute bottom-2 right-2 bg-black/40 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
+                    📸 尚琳廚苑
+                  </div>
+                </div>
+                <div class="p-4">
+                  <h3 class="font-bold text-lg text-white mb-1">{{aiResult.name}}</h3>
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="text-xl font-bold text-emerald-400">${{aiResult.price}}</span>
+                    <span
+                      class="bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full text-xs font-bold">&#128170;
+                      {{aiResult.protein}}g 蛋白</span>
+                  </div>
+                  <div class="bg-slate-700/40 rounded-xl p-3 mb-4 border border-slate-600/30">
+                    <p class="text-xs text-slate-400 flex items-start gap-1.5">
+                      <i class="fa-solid fa-sparkles text-amber-400 mt-0.5 flex-shrink-0"></i>
+                      <span><strong class="text-slate-300">AI 推薦理由：</strong>{{aiResult.reason}}</span>
+                    </p>
+                  </div>
+                  <button @click="aiQuickOrder"
+                    class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> 立即預訂
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ══════ TAB 4: Photo Analysis ══════ -->
+        <section v-show="activeTab === 'photo'" class="fade-in-up mt-4 max-w-md mx-auto">
+          <div class="bg-slate-900 rounded-2xl border border-slate-700/60 shadow-2xl overflow-hidden p-6 text-center">
+            <h2 class="text-xl font-bold text-white mb-2">📷 拍照分析外食</h2>
+            <p class="text-sm text-slate-400 mb-6">上傳您的餐點照片，AI將為您辨識食材並估算蛋白質與熱量。</p>
+
+            <input type="file" ref="fileInput" @change="handleFileUpload" accept="image/*" class="hidden">
+
+            <!-- Upload Zone -->
+            <div v-if="!photoPreviewUrl" @click="$refs.fileInput.click()"
+              class="upload-zone rounded-2xl p-8 border-2 border-dashed border-slate-600 hover:border-emerald-500 bg-slate-800/50 hover:bg-emerald-500/10 cursor-pointer transition-all">
+              <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+              <p class="text-sm text-slate-300 font-medium">點擊選擇照片</p>
+              <p class="text-[10px] text-slate-500 mt-1">支援 JPG / PNG / HEIC</p>
+            </div>
+
+            <!-- Preview & Analysis -->
+            <div v-else>
+              <div class="relative rounded-xl overflow-hidden mb-4 shadow-lg border border-slate-700 bg-black">
+                <img :src="photoPreviewUrl" alt="Uploaded food" class="w-full h-48 object-cover opacity-80">
+                <button v-if="!photoUploading" @click="clearPhoto"
+                  class="absolute top-2 right-2 w-8 h-8 rounded-lg bg-black/60 text-white flex items-center justify-center hover:bg-red-500 transition-colors"><i
+                    class="fa-solid fa-xmark"></i></button>
+              </div>
+
+              <div v-if="photoUploading" class="py-6 bounce-in">
+                <i class="fa-solid fa-microchip fa-bounce text-4xl text-emerald-500 mb-3"></i>
+                <p class="text-sm text-emerald-400 font-bold">AI 影像分析中...</p>
+                <p class="text-[10px] text-slate-400 mt-1">正在辨識食材內容與估算營養價值</p>
+              </div>
+
+              <div v-if="photoAnalyzed"
+                class="bg-gradient-to-r from-emerald-900/40 to-slate-800/40 border border-emerald-500/30 rounded-xl p-4 text-left bounce-in mb-4">
+                <div class="flex justify-between items-start mb-3">
+                  <div>
+                    <p class="text-xs text-slate-400 mb-0.5">辨識結果 <span v-if="!isRealAnalysis"
+                        class="text-amber-500 font-bold">(模擬)</span><span v-else
+                        class="text-emerald-400 font-bold">(AI)</span></p>
+                    <p class="text-sm text-emerald-400 font-bold">{{analysisResult.name}}</p>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 mb-2">
+                  <div class="bg-slate-800/80 rounded-lg p-2 border border-slate-700/50">
+                    <span class="block text-[10px] text-slate-400">估計蛋白質</span>
+                    <span class="text-xl font-black text-white">{{analysisResult.protein}}<span
+                        class="text-xs text-emerald-400 font-semibold ml-0.5">g</span></span>
+                  </div>
+                  <div class="bg-slate-800/80 rounded-lg p-2 border border-slate-700/50">
+                    <span class="block text-[10px] text-slate-400">熱量 (約)</span>
+                    <span class="text-xl font-black text-white">{{analysisResult.calories}}<span
+                        class="text-xs text-slate-400 font-medium ml-0.5">kcal</span></span>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-400 leading-relaxed">{{analysisResult.reason}}</p>
+              </div>
+
+              <div v-if="photoAnalyzed" class="flex gap-3 mt-4">
+                <button @click="clearPhoto"
+                  class="flex-1 py-2.5 rounded-xl border border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white text-sm font-bold transition-all">重新上傳</button>
+                <button @click="confirmPhotoLog"
+                  class="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-bold shadow-lg shadow-emerald-500/25 transition-all">
+                  <i class="fa-solid fa-plus text-xs mr-1"></i> 加入今日紀錄
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- ═══════════════ FLOATING CART BAR ═══════════════ -->
+      <transition name="slide-up">
+        <div v-if="cart.length > 0 && activeTab === 'order'" @click="showCartDrawer = true"
+          class="fixed bottom-0 inset-x-0 z-40 glass border-t border-emerald-500/30 cursor-pointer">
+          <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="relative">
+                <div
+                  class="w-10 h-10 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <i class="fa-solid fa-cart-shopping text-white"></i>
+                </div>
+                <span
+                  class="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center shadow-md">{{cartTotalQty}}</span>
+              </div>
+              <div>
+                <p class="text-sm font-bold text-white">{{cartTotalQty}} 件餐點</p>
+                <p class="text-[10px] text-slate-400">今日累積蛋白質: <span
+                    class="text-emerald-400 font-bold">{{todayProtein}}g</span></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <span class="text-xs text-slate-400 line-through block leading-none mb-0.5">${{cartTotalPrice}}</span>
+                <span class="text-xl font-bold text-emerald-400 leading-none">${{cartFinalPrice}}</span>
+              </div>
+              <div
+                class="bg-emerald-500 hover:bg-emerald-400 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/25 transition-all flex items-center gap-1.5">
+                查看購物車 <i class="fa-solid fa-chevron-right text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+
+      <!-- ═══════════════ CART DRAWER ═══════════════ -->
+      <teleport to="body">
+        <!-- Backdrop -->
+        <transition name="fade">
+          <div v-if="showCartDrawer" @click="showCartDrawer = false"
+            class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"></div>
+        </transition>
+        <!-- Drawer -->
+        <div v-if="showCartDrawer"
+          class="fixed top-0 right-0 bottom-0 w-full max-w-md bg-slate-900 border-l border-slate-700/60 z-50 slide-in-right flex flex-col shadow-2xl">
+          <!-- Header -->
+          <div class="px-5 py-4 border-b border-slate-700/40 flex items-center justify-between">
+            <h2 class="text-base font-bold flex items-center gap-2"><i
+                class="fa-solid fa-cart-shopping text-emerald-400"></i> 購物車</h2>
+            <button @click="showCartDrawer = false"
+              class="w-8 h-8 rounded-lg hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <!-- Items -->
+          <div class="flex-1 overflow-y-auto p-5 space-y-3">
+            <div v-for="(ci, idx) in cart" :key="ci.id + '-' + idx"
+              class="bg-slate-800/60 rounded-xl p-3 border border-slate-700/30 flex items-center gap-3">
+              <span class="text-3xl flex-shrink-0">{{ci.emoji}}</span>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-white truncate">{{ci.name}}</p>
+                <p class="text-xs text-slate-400">💪 {{ci.protein}}g ｜ ${{ci.price}}</p>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <button @click="decrementCart(idx)"
+                  class="w-7 h-7 rounded-lg bg-slate-700 hover:bg-slate-600 flex items-center justify-center text-white text-xs transition-colors"><i
+                    class="fa-solid fa-minus"></i></button>
+                <span class="text-sm font-bold w-5 text-center">{{ci.qty}}</span>
+                <button @click="incrementCart(idx)"
+                  class="w-7 h-7 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 flex items-center justify-center text-xs transition-colors"><i
+                    class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+            <div v-if="cart.length === 0" class="text-center py-12 text-slate-500">
+              <i class="fa-solid fa-cart-shopping text-3xl mb-2"></i>
+              <p class="text-sm">購物車是空的</p>
+            </div>
+          </div>
+          <!-- Summary & Checkout -->
+          <div class="p-5 border-t border-slate-700/40 space-y-3">
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">餐點小計</span><span class="text-white font-semibold">${{cartTotalPrice}}</span>
+            </div>
+            <div class="flex justify-between text-sm" v-if="cart.length > 0">
+              <span class="text-emerald-400">員工補助</span>
+              <span class="font-bold" :class="hasOrderedToday ? 'text-slate-400' : 'text-emerald-400'">
+                {{ hasOrderedToday ? '$0 (今日已使用過補助)' : '-$30' }}
+              </span>
+            </div>
+            <div class="flex justify-between text-base border-t border-slate-700/40 pt-3">
+              <span class="text-slate-200 font-bold">結帳總額</span><span
+                class="text-emerald-400 font-bold text-lg">${{cartFinalPrice}}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-slate-400">今日蛋白質累積</span><span
+                class="text-emerald-400 font-bold">{{todayProtein}}g</span>
+            </div>
+            <!-- Flow Guidance Card -->
+            <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3 text-xs space-y-2">
+              <div class="flex items-center justify-between font-semibold text-emerald-400">
+                <span><i class="fa-solid fa-link mr-1"></i>全自動跨站訂餐流程</span>
+                <span
+                  class="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  綁定工號：{{ currentUser.id || '11112345' }}
+                </span>
+              </div>
+              <div class="space-y-1.5 text-[11px] text-slate-300">
+                <div class="flex items-start gap-1.5">
+                  <span
+                    class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                  <span><strong>本站選餐</strong>：登入工號並選餐，資料庫自動 Commit 紀錄。</span>
+                </div>
+                <div class="flex items-start gap-1.5">
+                  <span
+                    class="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                  <span><strong>尚琳直達</strong>：跳轉尚琳結帳頁（Playwright 機器人自動帶入工號與餐點）。</span>
+                </div>
+                <div class="flex items-start gap-1.5">
+                  <span
+                    class="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                  <span><strong>手動結帳</strong>：最後核對工號與金額，按下「下單」完成訂購！</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <a :href="slkCheckoutHref" @click.prevent="checkout"
+                class="block w-full text-center py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-bold text-sm shadow-xl shadow-emerald-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2 no-underline">
+                <i class="fa-solid fa-paper-plane"></i> 確認點餐 ➔ 帶入工號直達尚琳結帳
+              </a>
+            </div>
+          </div>
+        </div>
+      </teleport>
+
+      <!-- ═══════════════ TEAMS BOT WIDGET ═══════════════ -->
+      <teleport to="body">
+        <!-- Floating Bot Button -->
+        <button @click="showTeamsBot = !showTeamsBot"
+          class="fixed bottom-6 right-6 z-[90] w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-90"
+          :class="showTeamsBot ? 'bg-[#4F52B2] rotate-0 scale-110' : 'bg-[#5B5FC7] hover:scale-110'"
+          title="MS Teams 推播">
+          <span class="text-2xl" :class="{'animate-bounce': !showTeamsBot}">🤖</span>
+          <!-- unread dot -->
+          <span v-if="!teamsOrdered"
+            class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 border-2 border-slate-950 flex items-center justify-center text-[9px] font-bold text-white">1</span>
+        </button>
+
+        <!-- Teams popup panel -->
+        <transition name="slide-up">
+          <div v-if="showTeamsBot"
+            class="fixed bottom-24 right-5 z-[89] w-80 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
+            style="max-height: 520px;">
+            <!-- Header -->
+            <div class="bg-[#5B5FC7] px-4 py-3 flex items-center gap-2.5">
+              <span class="text-xl">🤖</span>
+              <div class="flex-1">
+                <p class="text-white font-bold text-sm">午餐訂購 Bot</p>
+                <p class="text-white/60 text-[10px]">已連線 MS Teams 頻道</p>
+              </div>
+              <button @click="showTeamsBot = false"
+                class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+            <!-- Chat area -->
+            <div class="bg-slate-50 p-3 overflow-y-auto" style="max-height: 380px;">
+              <!-- Bot message -->
+              <div class="flex gap-2.5 mb-3">
+                <div
+                  class="w-8 h-8 rounded-full bg-[#5B5FC7] flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  B</div>
+                <div>
+                  <div class="flex items-baseline gap-1.5 mb-1">
+                    <span class="text-xs font-semibold text-slate-700">午餐機器人 Bot</span>
+                    <span class="text-[10px] text-slate-400">今日 10:30</span>
+                  </div>
+                  <!-- Adaptive Card -->
+                  <div class="bg-white rounded-xl overflow-hidden shadow-md border border-slate-200 w-full">
+                    <div
+                      class="h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center relative">
+                      <span class="text-5xl drop-shadow">🤖</span>
+                      <div
+                        class="absolute top-1.5 left-2 bg-white/25 backdrop-blur-sm text-white px-1.5 py-0.5 rounded-full text-[9px] font-bold">
+                        💡 AI 推薦</div>
+                    </div>
+                    <div class="p-3">
+                      <p class="text-sm font-bold text-slate-800 mb-1">超夠酥炸大雞腿飯</p>
+                      <div class="flex items-center gap-2 mb-2">
+                        <span
+                          class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">💪
+                          42g</span>
+                        <span class="font-bold text-emerald-600 text-sm">$110</span>
+                      </div>
+                      <p class="text-[10px] text-slate-500 mb-3">根據昨日運動紀錄，建議攝取充足蛋白質。為下午儲備體力！</p>
+                      <div v-if="!teamsOrdered" class="flex flex-col gap-1.5">
+                        <button @click="teamsOrder"
+                          class="w-full py-2 bg-[#5B5FC7] hover:bg-[#4F52B2] text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 active:scale-[0.98]">
+                          ⚡ 立即訂購 ({{currentUser.id}})
+                        </button>
+                        <button @click="showTeamsBot=false; activeTab='order'"
+                          class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-medium transition-colors">
+                          🔎 查看完整菜單
+                        </button>
+                      </div>
+                      <div v-else
+                        class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
+                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                        <span class="text-xs text-emerald-700 font-semibold">已成功預訂！</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Info message -->
+              <div class="flex gap-2.5">
+                <div
+                  class="w-8 h-8 rounded-full bg-[#5B5FC7] flex items-center justify-center text-white font-bold text-xs shrink-0">
+                  B</div>
+                <div class="bg-white rounded-xl p-2.5 border border-slate-200 shadow-sm max-w-[90%]">
+                  <p class="text-[10px] text-slate-500"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>Teams
+                    推播於每日 <strong>10:30</strong> 自動發送，訂單成功後會回傳確認訊息。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </teleport>
+
+      <!-- ═══════════════ ORDER SUCCESS TOAST ═══════════════ -->
+      <teleport to="body">
+        <transition name="fade">
+          <div v-if="showToast" class="fixed top-20 left-1/2 -translate-x-1/2 z-[100] bounce-in">
+            <div
+              class="bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-2xl shadow-emerald-500/30 flex items-center gap-2 text-sm font-semibold">
+              <i class="fa-solid fa-circle-check"></i> {{toastMsg}}
+            </div>
+          </div>
+        </transition>
+      </teleport>
+
+      <!-- ═══════════════ ORDER DATABASE RECORD MODAL ═══════════════ -->
+      <teleport to="body">
+        <transition name="fade">
+          <div v-if="showDbModal && currentUser.role === 'admin'"
+            class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+            <div
+              class="bg-slate-900 border border-slate-700/60 rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden fade-in-up">
+              <!-- Header -->
+              <div class="px-5 py-4 border-b border-slate-700/60 flex items-center justify-between bg-slate-800/50">
+                <div class="flex items-center gap-2.5">
+                  <div
+                    class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                    <i class="fa-solid fa-database text-base"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-bold text-white text-base">尚琳員工訂單資料庫紀錄</h3>
+                    <p class="text-[11px] text-slate-400">已自動儲存每個工號對應的日期、時間與訂購餐點</p>
+                  </div>
+                </div>
+                <button @click="showDbModal = false"
+                  class="w-8 h-8 rounded-lg hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                  <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+              </div>
+
+              <!-- Stats & Search -->
+              <div class="p-4 border-b border-slate-800 space-y-3 bg-slate-950/40">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                  <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
+                    <p class="text-[10px] text-slate-400">有效訂單</p>
+                    <p class="text-lg font-bold text-white">{{ dbStats.totalCount }} <span
+                        class="text-xs font-normal text-slate-400">筆</span></p>
+                  </div>
+                  <div class="bg-slate-800/60 p-2.5 rounded-xl border border-slate-700/40">
+                    <p class="text-[10px] text-slate-400">總累積金額</p>
+                    <p class="text-lg font-bold text-emerald-400">${{ dbStats.totalSum }}</p>
+                  </div>
+                  <div
+                    class="bg-slate-800/60 p-2.5 rounded-xl border border-rose-500/20 cursor-pointer hover:bg-rose-500/10 transition"
+                    @click="showCanceledOrders = !showCanceledOrders">
+                    <p class="text-[10px] text-slate-400">已取消訂單 {{ showCanceledOrders ? '▲' : '▼' }}</p>
+                    <p class="text-lg font-bold text-rose-400">{{ dbStats.canceledCount }} <span
+                        class="text-xs font-normal text-slate-400">筆</span></p>
+                  </div>
+                </div>
+
+                <!-- 已取消訂單展開列表 -->
+                <div v-if="showCanceledOrders && dbStats.canceledCount > 0" class="mt-2 space-y-2">
+                  <div v-for="rec in canceledDbRecords" :key="rec.id"
+                    class="bg-rose-950/30 border border-rose-500/30 rounded-xl p-3 space-y-1.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2">
+                        <span
+                          class="bg-rose-500/20 text-rose-300 font-bold px-2 py-0.5 rounded-lg border border-rose-500/30">
+                          <i class="fa-solid fa-id-badge text-[10px] mr-1"></i>工號：{{ rec.workerId }}
+                        </span>
+                        <span class="text-slate-400 font-mono text-[11px]">{{ rec.date }} {{ rec.time }}</span>
+                      </div>
+                      <span
+                        class="text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">
+                        {{ rec.status }}
+                      </span>
+                    </div>
+                    <div v-if="rec.items && rec.items.length" class="text-xs text-slate-400 pl-1">
+                      <span v-for="(item, i) in rec.items" :key="i">
+                        {{ item.name }} x{{ item.qty || 1 }}<span v-if="i < rec.items.length-1">、</span>
+                      </span>
+                    </div>
+                    <div class="flex gap-3 text-xs font-bold pt-0.5">
+                      <span class="text-white">${{ rec.totalPrice }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="relative">
+                  <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-500 text-xs"></i>
+                  <input type="text" v-model="dbSearchQuery" placeholder="搜尋工號 (如: 11112345)、日期或餐點..."
+                    class="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-emerald-500">
+                </div>
+              </div>
+
+              <!-- List -->
+              <div class="p-4 overflow-y-auto space-y-3 flex-1">
+                <div v-if="filteredDbRecords.length === 0" class="text-center py-10 text-slate-500 text-xs">
+                  <i class="fa-solid fa-inbox text-3xl mb-2 block opacity-40"></i>
+                  目前無符合條件的資料庫訂單紀錄
+                </div>
+
+                <div v-for="rec in filteredDbRecords" :key="rec.id"
+                  class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-3.5 hover:border-slate-600 transition-all space-y-2.5">
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="bg-emerald-500/20 text-emerald-300 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30">
+                        <i class="fa-solid fa-id-badge text-[10px] mr-1"></i>工號：{{ rec.workerId }}
+                      </span>
+                      <span class="text-slate-400 font-mono text-[11px]"><i class="fa-regular fa-calendar mr-1"></i>{{
+                        rec.date }} {{ rec.time }}</span>
+                    </div>
+                    <span
+                      :class="rec.status && rec.status.includes('CANCELED')
+                        ? 'text-[10px] text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20'
+                        : 'text-[10px] text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20'">
+                      {{ rec.status }}
+                    </span>
+                  </div>
+
+                  <div class="bg-slate-900/60 rounded-xl p-3 space-y-1.5 text-xs border border-slate-800">
+                    <div v-for="item in rec.items" :key="item.id"
+                      class="flex justify-between items-center text-slate-300">
+                      <span>{{ item.emoji || '🍱' }} <strong class="text-white">{{ item.name }}</strong> <span
+                          class="text-slate-500">x{{ item.qty }}</span></span>
+                      <span class="font-semibold text-emerald-400">${{ item.price * item.qty }} ({{ item.protein *
+                        item.qty }}g 蛋白)</span>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-700/40">
+                    <span class="text-slate-400 text-[11px] font-mono">單號: {{ rec.id }}</span>
+                    <span class="font-bold text-white">合計: <span class="text-emerald-400 text-sm">${{ rec.totalPrice
+                        }}</span></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Footer Actions -->
+              <div class="p-3.5 border-t border-slate-800 bg-slate-950/60 flex justify-between items-center">
+                <button @click="clearOrderHistoryDb"
+                  class="text-xs text-red-400 hover:text-red-300 px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors flex items-center gap-1.5">
+                  <i class="fa-solid fa-trash-can"></i> 清空資料庫
+                </button>
+                <button @click="showDbModal = false"
+                  class="bg-slate-700 hover:bg-slate-600 text-white font-semibold text-xs px-4 py-2 rounded-xl transition-all">
+                  關閉
+                </button>
+              </div>
+            </div>
+          </div>
+        </transition>
+      </teleport>
+
+    </div> <!-- End MAIN APP -->
+  </div>
+
+  <script>
+    const { createApp, ref, computed, watch, watchEffect, nextTick, onMounted } = Vue;
+    // 動態取得當前伺服器網址與 Port（相容於 Linux 部署與本機開發）
+    const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000';
+    const API = {
+      menu: `${API_BASE}/api/menu`,
+      checkout: `${API_BASE}/api/checkout`,
+      analyzePhoto: `${API_BASE}/api/analyze-photo`
+    };
+
+    createApp({
+      setup() {
+        // ──── Users & Login ────
+        const users = ref([
+          { id: 'EMP0330', name: 'Susan' },
+          { id: 'EMP0412', name: 'Kevin' },
+          { id: 'EMP0215', name: 'Amy' }
+        ]);
+        const isLoggedIn = ref(false);
+        const loginId = ref('');
+        const loginError = ref('');
+        const currentUser = ref({ id: '', name: '', role: 'user' });
+        const showUserMenu = ref(false);
+        const isAdminMode = ref(false);
+        const adminPassword = ref('');
+        const t = ref({
+          appName: '智饗 (Q-opt)',
+          tagline: '智慧點餐小幫手',
+          countdownOpen: '距離開放 ',
+          countdownClose: '距離截止 ',
+          estProt: '今日蛋白質'
+        });
+        // Auto-restore / Auto-import saved employee ID
+        let savedUser = localStorage.getItem('app_user_id');
+        const savedRole = localStorage.getItem('app_user_role') || 'user';
+
+        if (savedRole === 'admin') {
+          // 管理員安全：重整時，強制要求重新輸入密碼登入
+          localStorage.removeItem('app_user_role');
+          isLoggedIn.value = false;
+          currentUser.value = { id: '', name: '', role: 'user' };
+        } else if (savedUser) {
+          // 只有 localStorage 有儲存的工號才自動登入
+          currentUser.value = { id: savedUser, name: `員工 (${savedUser})`, role: 'user' };
+          isLoggedIn.value = true;
+          fetchUserData(savedUser);
+        } else {
+          // 沒有登入紀錄 → 顯示登入畫面
+          isLoggedIn.value = false;
+          currentUser.value = { id: '', name: '', role: 'user' };
+        }
+
+        const isRegisterMode = ref(false);
+        const loginPassword = ref('');
+        const registerId = ref('');
+        const registerName = ref('');
+        const registerPassword = ref('');
+        const registerError = ref('');
+
+        const todayOrderList = ref([]);
+        const showTodayOrderModal = ref(false);
+
+        async function fetchUserData(empId) {
+          try {
+            const res = await fetch(`${API_BASE}/api/user/me?employee_id=${empId}`);
+            if (res.ok) {
+              const data = await res.json();
+              // 更新真實姓名
+              if (currentUser.value.role !== 'admin' && data.name) {
+                currentUser.value.name = data.name;
+              }
+              // Update local state with DB protein tracking
+              weekDays.value.forEach(d => {
+                d.isToday = (d.label === data.today.weekday);
+                d.protein = d.isToday ? data.today.protein : 0;
+              });
+
+              // 提取今日點餐紀錄
+              if (data.history) {
+                todayOrderList.value = data.history.filter(h => h.date === data.today.date);
+              }
+            }
+          } catch (e) {
+            console.error('Failed to fetch user data', e);
+          }
+        }
+
+        async function login() {
+          const inputId = loginId.value.trim();
+          if (!inputId || !loginPassword.value) {
+            loginError.value = '請輸入完整資訊';
+            return;
+          }
+          if (inputId === 'admin' && loginPassword.value === 'admin123') {
+            currentUser.value = { id: 'admin', name: '系統管理員', role: 'admin' };
+            isLoggedIn.value = true;
+            localStorage.setItem('app_user_id', 'admin');
+            localStorage.setItem('app_user_role', 'admin');
+            loginError.value = '';
+            todayOrderList.value = [];
+            return;
+          }
+          loginError.value = '';
+          try {
+            const res = await fetch(`${API_BASE}/api/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ employee_id: inputId, password: loginPassword.value })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              currentUser.value = { id: data.user.id, name: data.user.name, role: 'user' };
+              isLoggedIn.value = true;
+              localStorage.setItem('app_user_id', data.user.id);
+              fetchUserData(data.user.id);
+            } else {
+              loginError.value = data.detail || '登入失敗';
+            }
+          } catch (e) {
+            loginError.value = '無法連線伺服器';
+          }
+        }
+
+        async function register() {
+          const inputId = registerId.value.trim();
+          if (!/^111\d{5}$/.test(inputId)) {
+            registerError.value = '工號必須為 111 開頭共 8 碼';
+            return;
+          }
+          if (registerPassword.value.length < 4) {
+            registerError.value = '密碼長度至少4碼';
+            return;
+          }
+          registerError.value = '';
+          try {
+            const res = await fetch(`${API_BASE}/api/register`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ employee_id: inputId, password: registerPassword.value, name: registerName.value })
+            });
+            const data = await res.json();
+            if (res.ok) {
+              showToastFn('註冊成功！已為您自動登入。');
+              loginId.value = inputId;
+              loginPassword.value = registerPassword.value;
+              await login();
+            } else {
+              registerError.value = data.detail || '註冊失敗';
+            }
+          } catch (e) {
+            registerError.value = '無法連線伺服器';
+          }
+        }
+
+        function logout() {
+          isLoggedIn.value = false;
+          currentUser.value = { id: '', name: '', role: 'user' };
+          showUserMenu.value = false;
+          localStorage.removeItem('app_user_id');
+          localStorage.removeItem('app_user_role');
+          cart.value = [];
+          todayOrderList.value = [];
+
+          // 清空輸入框留存
+          loginId.value = '';
+          loginPassword.value = '';
+          registerId.value = '';
+          registerName.value = '';
+          registerPassword.value = '';
+          loginError.value = '';
+          registerError.value = '';
+        }
+
+        // ──── Tabs ────
+        const tabs = ref([
+          { id: 'home', icon: '🏠', label: '首頁' },
+          { id: 'order', icon: '⚡', label: '快速點餐' },
+          { id: 'ai', icon: '🤖', label: 'AI 今日推薦' },
+          { id: 'photo', icon: '📷', label: '拍照分析' }
+        ]);
+        const activeTab = ref('home');
+        const tabRefs = ref({});
+
+        watchEffect(() => {
+          document.title = `${t.value.appName} - ${t.value.tagline}`;
+        });
+        const tabIndicatorStyle = computed(() => {
+          const idx = tabs.value.findIndex(t => t.id === activeTab.value);
+          const el = tabRefs.value[idx];
+          if (!el) return { left: '0px', width: '80px' };
+          return { left: el.offsetLeft + 'px', width: el.offsetWidth + 'px' };
+        });
+
+        // ──── Weekly Protein ────
+        const showProteinTracker = ref(false);
+        const getUserWeightKey = () => `protein_body_weight_${currentUser.value.id || 'guest'}`;
+        const getUserGoalKey = () => `protein_goal_${currentUser.value.id || 'guest'}`;
+        const weekDays = ref([
+          { label: '週一', protein: 0, isToday: false },
+          { label: '週二', protein: 0, isToday: false },
+          { label: '週三', protein: 0, isToday: false },
+          { label: '週四', protein: 0, isToday: false },
+          { label: '週五', protein: 0, isToday: false },
+          { label: '週六', protein: 0, isToday: false },
+          { label: '週日', protein: 0, isToday: false }
+        ]);
+        const showGoalSetting = ref(false);
+        const bodyWeight = ref(65);
+        const customProteinGoal = ref(35);
+        const recommendedProtein = computed(() => {
+          const weight = Number(bodyWeight.value);
+          if (!weight || weight <= 0) return 0;
+          return Math.round(weight * 1.1);
+        });
+        const proteinGoal = computed(() => Math.max(customProteinGoal.value, recommendedProtein.value));
+        const todayProtein = computed(() => weekDays.value.find(day => day.isToday)?.protein ?? 0);
+        const weeklyProteinTotal = computed(() => weekDays.value.reduce((sum, day) => sum + day.protein, 0));
+        const weeklyGoalTotal = computed(() => proteinGoal.value * weekDays.value.length);
+
+        watch(bodyWeight, (newVal) => {
+          if (currentUser.value.id) localStorage.setItem(getUserWeightKey(), String(newVal));
+        });
+        watch(customProteinGoal, (newVal) => {
+          if (currentUser.value.id) localStorage.setItem(getUserGoalKey(), String(newVal));
+        });
+
+        watch(currentUser, (newUser) => {
+          if (newUser.id) {
+            const savedW = localStorage.getItem(getUserWeightKey());
+            const savedG = localStorage.getItem(getUserGoalKey());
+            if (savedW) bodyWeight.value = Number(savedW);
+            if (savedG) customProteinGoal.value = Number(savedG);
+          }
+        }, { immediate: true });
+
+        function addTodayProtein(amount) {
+          const todayEntry = weekDays.value.find(day => day.isToday);
+          if (todayEntry) {
+            todayEntry.protein = Math.max(0, todayEntry.protein + amount);
+          }
+        }
+        const maxBarValue = computed(() => {
+          const highest = Math.max(...weekDays.value.map(day => day.protein), proteinGoal.value);
+          return Math.max(highest + 20, 60);
+        });
+
+        // ──── Menu Data (來源：slk9898.com.tw 尚琳廚苑) ────
+        // available: true  = 訂購按鈕旁有顯示價格 → 今日有供應
+        // available: false = 訂購按鈕旁無價格     → 今日未供應，不推薦
+        const menuItems = ref([]);
+        const isMenuLoading = ref(true);
+
+        async function fetchMenuData() {
+          try {
+            const res = await fetch(API.menu);
+            if (res.ok) {
+              const data = await res.json();
+              if (data && data.length > 0) {
+                // 將爬蟲與 AI 分析的營養資料格式化為前端所需格式
+                menuItems.value = data.map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  desc: item.protein_breakdown || item.full_name || item.description || '',
+                  price: item.price,
+                  protein: item.protein || 25,
+                  calories: item.calories || null,
+                  protein_breakdown: item.protein_breakdown || '',
+                  emoji: '🍱',
+                  image: item.image || item.image_url || '',
+                  tags: item.tags || [],
+                  soldOut: false,
+                  available: item.is_available,
+                  product_id: item.product_id
+                }));
+              }
+            }
+          } catch (e) {
+            console.error("Failed to fetch menu:", e);
+          } finally {
+            isMenuLoading.value = false;
+          }
+        }
+
+        // ──── Filters ────
+        const filterTags = ref([
+          { id: 'all', icon: '🔥', label: '全部' },
+          { id: 'high', icon: '💪', label: '高蛋白(≥35g)' },
+          { id: 'light', icon: '🥗', label: '輕食低負擔' },
+          { id: 'budget', icon: '💰', label: '110元內' }
+        ]);
+        const activeFilter = ref('all');
+        const searchQuery = ref('');
+
+        function toggleFilter(id) {
+          activeFilter.value = activeFilter.value === id ? 'all' : id;
+        }
+
+        const filteredMenu = computed(() => {
+          // 只顯示真正有價格且可顯示的餐點；沒有價格或價格為 0 的項目不顯示
+          let items = menuItems.value.filter(i => !i.soldOut && i.name && Number(i.price) > 0);
+
+          if (activeFilter.value !== 'all') {
+            if (activeFilter.value === 'high') items = items.filter(i => i.protein >= 35);
+            else if (activeFilter.value === 'light') items = items.filter(i => i.tags.includes('light'));
+            else if (activeFilter.value === 'budget') items = items.filter(i => i.price <= 110);
+            else items = items.filter(i => i.tags.includes(activeFilter.value));
+          }
+          if (searchQuery.value.trim()) {
+            const q = searchQuery.value.trim().toLowerCase();
+            items = items.filter(i => (i.name || '').toLowerCase().includes(q) || (i.desc || '').toLowerCase().includes(q));
+          }
+          return items;
+        });
+
+        // 不供應的品項（用於展示「今日未提供」區塊）
+        const unavailableMenu = computed(() => menuItems.value.filter(i => i.available === false || Number(i.price) <= 0));
+
+        // ──── Cart ────
+        const cart = ref([]);
+        const showCartDrawer = ref(false);
+
+        function addToCart(item) {
+          const existing = cart.value.find(c => c.id === item.id);
+          if (existing) { existing.qty++; }
+          else { cart.value.push({ ...item, qty: 1 }); }
+          showToastFn(`已加入 ${item.name}`);
+        }
+
+        function incrementCart(idx) { cart.value[idx].qty++; }
+        function decrementCart(idx) {
+          cart.value[idx].qty--;
+          if (cart.value[idx].qty <= 0) cart.value.splice(idx, 1);
+        }
+
+        // 重複下單防範：判斷當前工號今日是否已下過單 (每日限補助一次 $30)
+        const hasOrderedToday = computed(() => todayOrderList.value.length > 0);
+
+        const cartTotalQty = computed(() => cart.value.reduce((s, c) => s + c.qty, 0));
+        const cartTotalPrice = computed(() => cart.value.reduce((s, c) => s + c.price * c.qty, 0));
+        const cartSubsidy = computed(() => (cart.value.length > 0 && !hasOrderedToday.value) ? 30 : 0);
+        const cartFinalPrice = computed(() => cart.value.length > 0 ? Math.max(0, cartTotalPrice.value - cartSubsidy.value) : 0);
+        const cartTotalProtein = computed(() => cart.value.reduce((s, c) => s + c.protein * c.qty, 0));
+
+        // ──── Active Order ────
+        const activeOrder = ref(null);
+
+        function cancelOrder() {
+          if (activeOrder.value) {
+            addTodayProtein(-activeOrder.value.totalProtein);
+            activeOrder.value = null;
+            showToastFn('🚫 訂單已取消，蛋白質已復原');
+          }
+        }
+
+        function modifyOrder() {
+          if (activeOrder.value) {
+            activeTab.value = 'order';
+            cart.value = JSON.parse(JSON.stringify(activeOrder.value.items));
+            addTodayProtein(-activeOrder.value.totalProtein);
+            activeOrder.value = null;
+            showCartDrawer.value = true;
+            showToastFn('✏️ 已將訂單還原至購物車，請重新修改');
+          }
+        }
+
+        const slkProductIdMap = {
+          '超夯酥炸大雞腿飯': 14626,
+          '酥炸大雞腿飯': 14626,
+          '泰式檸檬雞腿排': 69395,
+          '泰式檸檬雞腿排飯': 69395,
+          '港式蔥油雞飯': 11331,
+          '紅燒無骨滷排飯': 83669,
+          '川味家常肉絲飯': 91945,
+          '炙火炭烤戰斧豬排': 98414,
+          '炙火炭烤戰斧豬排飯': 98414,
+          '菩提蔬食便當（蛋奶素）': 13058,
+          '彤緣蔬食便當': 13058,
+          '豆鼓蒸嫩排飯': 103396,
+          '允指回味炙鯖魚飯': 16931,
+          '明火炭烤挪威鯖魚飯': 16931
+        };
+
+        function getSlkProductId(item) {
+          if (item && item.product_id) return item.product_id;
+          const name = (item && item.name) ? item.name : '';
+          if (name.includes('檸檬雞')) return 69395;
+          if (name.includes('蔥油雞')) return 11331;
+          if (name.includes('滷排') || name.includes('紅燒') || name.includes('排骨')) return 83669;
+          if (name.includes('肉絲')) return 91945;
+          if (name.includes('戰斧')) return 98414;
+          if (name.includes('蔬食') || name.includes('素食')) return 13058;
+          if (name.includes('鯖魚')) return 16931;
+          if (name.includes('碳烤') && name.includes('雞腿')) return 54520;
+          if (name.includes('雞腿')) return 14626;
+          if (name.includes('豬扒')) return 95253;
+          if (name.includes('豆鼓') || name.includes('蒸嫩排')) return 103396;
+          return 14626;
+        }
+
+        function getSlkCheckoutUrl(items, workerId) {
+          const worker = workerId || (currentUser.value ? currentUser.value.id : '11112345');
+          const encodedId = encodeURIComponent(worker);
+          const encodedCompany = encodeURIComponent(`工號:${worker}`);
+          const encodedComments = encodeURIComponent(`員工工號:${worker}`);
+
+          if (!items || items.length === 0) {
+            return `https://www.slk9898.com.tw/checkout/?billing_first_name=${encodedId}&billing_company=${encodedCompany}&order_comments=${encodedComments}`;
+          }
+
+          if (items.length === 1) {
+            const firstProduct = items[0];
+            const productId = getSlkProductId(firstProduct);
+            const qty = firstProduct.qty || 1;
+            return `https://www.slk9898.com.tw/checkout/?add-to-cart=${productId}&quantity=${qty}&billing_first_name=${encodedId}&billing_company=${encodedCompany}&order_comments=${encodedComments}`;
+          } else {
+            const pids = items.map(it => getSlkProductId(it)).join(',');
+            const qtys = items.map(it => it.qty || 1).join(',');
+            return `https://www.slk9898.com.tw/checkout/?add-to-cart=${pids}&quantity=${qtys}&billing_first_name=${encodedId}&billing_company=${encodedCompany}&order_comments=${encodedComments}`;
+          }
+        }
+
+        function triggerPlaywrightCheckout(checkoutUrl, workerId, items, successMsg) {
+          const itemsPayload = Array.isArray(items) ? items : cart.value;
+          showToastFn(successMsg || '🎉 正在啟動自動結帳，請稍候...');
+          fetch(API.checkout, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              checkout_url: checkoutUrl,
+              worker_id: workerId,
+              employee_id: workerId,
+              items: itemsPayload
+            })
+          }).then(res => {
+            if (!res.ok) throw new Error('伺服器回傳錯誤');
+          }).catch(err => {
+            console.log('無法連線至本地 Playwright 伺服器，將直接開啟結帳網頁。', err);
+            setTimeout(() => {
+              window.location.href = checkoutUrl;
+            }, 700);
+          });
+        }
+
+        // ──── Order Database (資料庫紀錄: 工號, 日期, 時間, 餐點) ────
+        const slkDbKey = 'slkOrderHistoryDb_v2';
+        const orderHistoryDb = ref(loadOrderHistoryDb());
+        const showDbModal = ref(false);
+        const showCanceledOrders = ref(false);
+        const canceledDbRecords = computed(() =>
+          orderHistoryDb.value.filter(r => r.status && r.status.includes('CANCELED'))
+        );
+        const dbSearchQuery = ref('');
+
+        function loadOrderHistoryDb() {
+          try {
+            return JSON.parse(localStorage.getItem(slkDbKey) || '[]');
+          } catch (e) {
+            return [];
+          }
+        }
+
+        function saveOrderHistoryDb() {
+          localStorage.setItem(slkDbKey, JSON.stringify(orderHistoryDb.value));
+        }
+
+        function recordOrderToDb(workerId, items, totalPrice, totalProtein) {
+          const now = new Date();
+          const dateStr = now.getFullYear() + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + String(now.getDate()).padStart(2, '0');
+          const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+
+          const newRecord = {
+            id: `ORD-${Date.now()}-${workerId || 'GUEST'}`,
+            workerId: workerId || '未輸入工號',
+            date: dateStr,
+            time: timeStr,
+            timestamp: now.getTime(),
+            items: JSON.parse(JSON.stringify(items)),
+            totalPrice: totalPrice,
+            totalProtein: totalProtein,
+            status: '已帶入尚琳結帳頁（待手動結帳）'
+          };
+
+          orderHistoryDb.value.unshift(newRecord);
+          saveOrderHistoryDb();
+          return newRecord;
+        }
+
+        function clearOrderHistoryDb() {
+          if (confirm('確定要清空所有資料庫訂單紀錄嗎？')) {
+            orderHistoryDb.value = [];
+            saveOrderHistoryDb();
+            showToastFn('🗑️ 資料庫紀錄已清空');
+          }
+        }
+
+
+        async function fetchAdminOrders() {
+          try {
+            const res = await fetch(`${API_BASE}/api/orders`);
+            if (res.ok) {
+              const data = await res.json();
+              orderHistoryDb.value = data.orders.map(o => {
+                let items = o.meals || [];
+                if (typeof items === 'string') {
+                  try { items = JSON.parse(items); } catch (e) { items = []; }
+                }
+                return {
+                  id: o.order_code,
+                  workerId: o.worker_id,
+                  date: o.order_date,
+                  time: o.order_time,
+                  items: items,
+                  totalPrice: o.total_price,
+                  totalProtein: o.total_protein,
+                  status: o.status
+                };
+              });
+            }
+          } catch (e) {
+            console.error('Failed to fetch admin orders', e);
+          }
+        }
+
+        const filteredDbRecords = computed(() => {
+          // 只顯示有效訂單（排除已取消）
+          const activeRecords = orderHistoryDb.value.filter(r => !r.status || !r.status.includes('CANCELED'));
+          if (!dbSearchQuery.value.trim()) return activeRecords;
+          const q = dbSearchQuery.value.trim().toLowerCase();
+          return activeRecords.filter(r =>
+            r.workerId.toLowerCase().includes(q) ||
+            r.date.includes(q) ||
+            r.time.includes(q) ||
+            (r.items && r.items.some(i => i.name && i.name.toLowerCase().includes(q)))
+          );
+        });
+
+        const dbStats = computed(() => {
+          const activeOrders = orderHistoryDb.value.filter(r => !r.status || !r.status.includes('CANCELED'));
+          const canceledOrders = orderHistoryDb.value.filter(r => r.status && r.status.includes('CANCELED'));
+          const totalCount = activeOrders.length;
+          const totalSum = activeOrders.reduce((sum, r) => sum + (r.totalPrice || 0), 0);
+          const canceledCount = canceledOrders.length;
+          return { totalCount, totalSum, canceledCount };
+        });
+
+        const slkOrderDbKey = 'slkEmployeeOrderDb_v1';
+        const slkOrderDb = ref(loadEmployeeOrderDb());
+
+        function loadEmployeeOrderDb() {
+          try {
+            return JSON.parse(localStorage.getItem(slkOrderDbKey) || '{}');
+          } catch (error) {
+            return {};
+          }
+        }
+
+        function saveEmployeeOrderDb() {
+          localStorage.setItem(slkOrderDbKey, JSON.stringify(slkOrderDb.value));
+        }
+
+        function getEmployeeOrder(employeeId) {
+          if (!employeeId) return [];
+          const saved = slkOrderDb.value[employeeId];
+          return Array.isArray(saved) ? saved : [];
+        }
+
+        function setEmployeeOrder(employeeId, items) {
+          if (!employeeId || !Array.isArray(items) || items.length === 0) return;
+          slkOrderDb.value = {
+            ...slkOrderDb.value,
+            [employeeId]: items.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              protein: item.protein,
+              emoji: item.emoji || '',
+              qty: item.qty || 1
+            }))
+          };
+          saveEmployeeOrderDb();
+        }
+
+        const employeeOrder = computed(() => currentUser.value.id ? getEmployeeOrder(currentUser.value.id) : []);
+
+        function applyEmployeeOrder() {
+          if (!currentUser.value.id) return;
+          const saved = getEmployeeOrder(currentUser.value.id);
+          if (saved.length === 0) {
+            showToastFn(`⚠️ 工號 ${currentUser.value.id} 尚無儲存訂單`);
+            return;
+          }
+          cart.value = JSON.parse(JSON.stringify(saved));
+          showToastFn(`✅ 已匯入工號 ${currentUser.value.id} 的訂單`);
+          activeTab.value = 'order';
+          showCartDrawer.value = true;
+        }
+
+        function parseSlkOrderFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          const employeeId = params.get('billing_first_name') || params.get('emp') || params.get('employee_id');
+          const productParam = params.get('add-to-cart') || params.get('product_id') || params.get('products');
+          if (!employeeId || !productParam) return null;
+          const productIds = productParam.split(',').map(v => v.trim()).filter(v => v);
+          const quantityParam = params.get('quantity');
+          const quantities = quantityParam ? quantityParam.split(',').map(v => parseInt(v, 10) || 1) : [];
+          const items = productIds.map((productId, index) => {
+            const qty = quantities[index] || 1;
+            const item = menuItems.value.find(menuItem => String(getSlkProductId(menuItem)) === String(productId));
+            if (!item) return null;
+            return { ...item, qty };
+          }).filter(Boolean);
+          if (items.length === 0) return null;
+          return { employeeId, items };
+        }
+
+        function importEmployeeOrderFromUrl() {
+          const parsed = parseSlkOrderFromUrl();
+          if (!parsed) return false;
+          setEmployeeOrder(parsed.employeeId, parsed.items);
+          if (!isLoggedIn.value) {
+            currentUser.value = { id: parsed.employeeId, name: `員工 (${parsed.employeeId})` };
+            isLoggedIn.value = true;
+            // 不自動將匯入的 workerId 存成 app_user_id，避免未經使用者確認即自動登入
+          }
+          cart.value = JSON.parse(JSON.stringify(parsed.items));
+          showToastFn(`✅ 已根據工號 ${parsed.employeeId} 匯入尚琳訂單`);
+          activeTab.value = 'order';
+          showCartDrawer.value = true;
+          window.history.replaceState({}, '', location.pathname);
+          return true;
+        }
+
+        function forwardToSlkCheckout(items, workerId) {
+          const checkoutUrl = getSlkCheckoutUrl(items, workerId);
+          const worker = workerId || (currentUser.value ? currentUser.value.id : '11112345');
+          triggerPlaywrightCheckout(checkoutUrl, worker, items, `🎉 正在將工號 ${worker} 連接至尚琳官網結帳頁面...`);
+          return checkoutUrl !== 'https://www.slk9898.com.tw/checkout/';
+        }
+
+        function forwardToSlkCart(items) {
+          return forwardToSlkCheckout(items, currentUser.value.id);
+        }
+
+        const slkCheckoutHref = computed(() => {
+          if (cart.value.length === 0) return 'javascript:void(0)';
+          return getSlkCheckoutUrl(cart.value, currentUser.value.id);
+        });
+
+        async function syncBackendDb() {
+          try {
+            const res = await fetch(`${API_BASE}/api/orders`);
+            if (res.ok) {
+              const data = await res.json();
+              if (data.orders && Array.isArray(data.orders)) {
+                const existingIds = new Set(orderHistoryDb.value.map(r => r.id));
+                data.orders.forEach(o => {
+                  const code = o.order_code || `ORD-${o.id}`;
+                  if (!existingIds.has(code)) {
+                    orderHistoryDb.value.unshift({
+                      id: code,
+                      workerId: o.worker_id || o.employee_id,
+                      date: o.order_date,
+                      time: o.order_time,
+                      items: o.meals || [],
+                      totalPrice: o.total_price,
+                      totalProtein: o.total_protein,
+                      status: '已同步至伺服器資料庫'
+                    });
+                  }
+                });
+                saveOrderHistoryDb();
+              }
+            }
+          } catch (e) {
+            // 背景自動靜默切換為本機持久化資料庫
+          }
+        }
+
+        async function checkout() {
+          if (cart.value.length === 0) return;
+          const empId = currentUser.value.id || localStorage.getItem('app_user_id') || '11112345';
+          const orderItems = JSON.parse(JSON.stringify(cart.value));
+          const fallbackCheckoutUrl = getSlkCheckoutUrl(orderItems, empId);
+
+          // 1. 本地記錄至 LocalStorage 資料庫（確保無伺服器時也能 100% 保存）
+          recordOrderToDb(empId, orderItems, cartFinalPrice.value, cartTotalProtein.value);
+          setEmployeeOrder(empId, orderItems);
+
+          // 2. 發送 API POST 請求寫入後端資料庫並觸發 Playwright
+          try {
+            const payload = {
+              employee_id: empId,
+              worker_id: empId,
+              items: orderItems.map(item => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                protein: item.protein,
+                product_id: item.product_id || getSlkProductId(item),
+                qty: item.qty || 1
+              })),
+              total_price: cartFinalPrice.value,
+              total_protein: cartTotalProtein.value
+            };
+
+            console.log("🚀 [Checkout Payload]:", payload);
+
+            const res = await fetch(`${API_BASE}/api/orders`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+              const resData = await res.json();
+              console.log("✅ [FastAPI 寫入成功]:", resData);
+              const msg = hasOrderedToday.value
+                ? "✅ 訂單送出！(今日已領過補助)"
+                : "✅ 訂單送出並套用 $30 補助！";
+              showToastFn(msg);
+
+              // 重新向後端索取最新的蛋白質數據以即時更新畫面
+              fetchUserData(empId);
+              // 清空購物車與關閉抽屜
+              cart.value = [];
+              showCartDrawer.value = false;
+              // Playwright Chromium 視窗已在桌面彈出，不再跳轉本頁瀏覽器
+            } else {
+              console.warn("⚠️ 後端 API 異常，啟動備援直連");
+              showToastFn("⚠️ 伺服器異常，已自動為您開啟直連結帳網頁！");
+              setTimeout(() => {
+                window.location.href = fallbackCheckoutUrl;
+              }, 800);
+            }
+          } catch (err) {
+            console.log("ℹ️ 觸發網路防範機制，以本機資料庫完成落盤並導向尚琳頁面");
+            showToastFn("⚠️ 無法連線至後端，已自動為您開啟尚琳結帳頁面...");
+            setTimeout(() => {
+              window.location.href = fallbackCheckoutUrl;
+            }, 800);
+          }
+
+          activeOrder.value = {
+            items: orderItems,
+            totalPrice: cartFinalPrice.value,
+            totalProtein: cartTotalProtein.value,
+            time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+          };
+
+          cart.value = [];
+          showCartDrawer.value = false;
+          activeTab.value = 'home';
+        }
+
+        async function deleteOrder(orderId) {
+          if (!confirm("確定要取消這筆訂單嗎？取消後需自行重新下單。")) return;
+          try {
+            const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+              method: 'DELETE'
+            });
+            if (res.ok) {
+              todayOrderList.value = todayOrderList.value.filter(o => o.id !== orderId);
+              showToastFn("🗑️ 訂單已取消！");
+              if (currentUser.value.id) {
+                fetchUserData(currentUser.value.id);
+              }
+            } else {
+              showToastFn("⚠️ 取消訂單失敗");
+            }
+          } catch (e) {
+            console.error("Delete order error", e);
+            showToastFn("⚠️ 網路錯誤");
+          }
+        }
+
+        async function editOrder(order) {
+          if (!confirm("修改訂單會將原本的訂單取消，並將餐點加回購物車讓您重新結帳。確定要修改嗎？")) return;
+          try {
+            const res = await fetch(`${API_BASE}/api/orders/${order.id}`, {
+              method: 'DELETE'
+            });
+            if (res.ok) {
+              showToastFn("✏️ 訂單已準備好修改！請在購物車確認後重新送出。");
+              if (currentUser.value.id) {
+                fetchUserData(currentUser.value.id);
+              }
+              // 將餐點加回購物車
+              cart.value = JSON.parse(JSON.stringify(order.items));
+              showCartDrawer.value = true;
+            } else {
+              showToastFn("⚠️ 修改失敗：無法取消原訂單");
+            }
+          } catch (e) {
+            console.error("Edit order error", e);
+            showToastFn("⚠️ 網路錯誤");
+          }
+        }
+
+    // 智庫：計算使用者過去 7 天內最常點的餐點 (快速再訂)
+    const mostFrequentItem7Days = computed(() => {
+      const empId = currentUser.value.id || localStorage.getItem('app_user_id') || '11112345';
+      const sevenDaysAgo = Date.now() - 7 * 86400 * 1000;
+
+      const counts = {};
+      orderHistoryDb.value.forEach(order => {
+        if (order.workerId === empId && (order.timestamp ? order.timestamp >= sevenDaysAgo : true)) {
+          if (order.items && Array.isArray(order.items)) {
+            order.items.forEach(item => {
+              const name = item.name;
+              counts[name] = (counts[name] || 0) + (item.qty || 1);
+            });
+          }
+        }
+      });
+
+      let maxCount = 0;
+      let topItemName = '';
+      for (const [name, count] of Object.entries(counts)) {
+        if (count > maxCount) {
+          maxCount = count;
+          topItemName = name;
+        }
+      }
+
+      if (topItemName) {
+        const found = menuItems.value.find(i => i.name === topItemName || i.name.includes(topItemName) || topItemName.includes(i.name));
+        if (found) {
+          return {
+            ...found,
+            count: maxCount,
+            isHistoryBased: true,
+            label: `近 7 天最常點 (${maxCount} 次) · 快速再訂`
+          };
+        }
+      }
+
+      // Fallback to the first available item if no history exists
+      const availableItems = menuItems.value.filter(i => i.available !== false && Number(i.price) > 0);
+      const defaultItem = availableItems.length > 0 ? availableItems[0] : (menuItems.value[0] || {});
+
+      return {
+        ...defaultItem,
+        count: 0,
+        isHistoryBased: false,
+        label: '熱門推薦 · 快速再訂'
+      };
+    });
+
+    function quickReorder() {
+      const item = mostFrequentItem7Days.value;
+      if (item) {
+        cart.value = [{ ...item, qty: 1 }];
+        showCartDrawer.value = true;
+        showToastFn(`⚡ 已將【${item.name}】加入購物車！`);
+      }
+    }
+
+    // ──── (deleteOrder / editOrder 已定義於 setup() 內部，不重複定義) ────
+
+
+    const proteinOptions = ref([
+      { id: 'low', label: '輕量 <30g' },
+      { id: 'mid', label: '適中 30-40g' },
+      { id: 'high', label: '高蛋白 >40g' }
+    ]);
+    const prefOptions = ref([
+      { id: 'any', icon: '🍽️', label: '不限' },
+      { id: 'chicken', icon: '🐔', label: '雞肉' },
+      { id: 'pork', icon: '🐷', label: '豬肉' },
+      { id: 'seafood', icon: '🦐', label: '海鮮' },
+      { id: 'veggie', icon: '🥬', label: '蔬食' }
+    ]);
+    const aiProtein = ref('high');
+    const aiPref = ref('any');
+    const aiLoading = ref(false);
+    const aiResult = ref(null);
+
+    const aiReasons = {
+      'high-any': '根據您的高蛋白需求，【{name}】提供優質蛋白質與飽足感，是增肌與體能補充的最佳選擇！',
+      'high-chicken': '【{name}】富含優質雞肉蛋白與均衡配菜，提供滿滿活力與持久飽足感，是健身與增肌首選。',
+      'high-pork': '【{name}】提供豐富肉類蛋白質與鐵質，搭配均衡配菜，是工作與訓練後的絕佳補充。',
+      'high-seafood': '【{name}】富含高品質魚類蛋白及 Omega-3，適合追求精實體態與健康營養的你。',
+      'high-veggie': '【{name}】為植物性優質蛋白組合，滿足蔬食與清爽飲食的營養需求。',
+      'mid-any': '【{name}】均衡營養搭配適中蛋白質，兼顧美味與健康，適合日常穩定攝取。',
+      'mid-chicken': '【{name}】搭配精緻配菜，蛋白質適中且容易消化，是日常午餐的絕佳選擇。',
+      'mid-pork': '【{name}】搭配精緻配菜，蛋白質適中，兼顧口感豐富度與營養均衡。',
+      'mid-seafood': '【{name}】含豐富海鮮優質蛋白質，是清爽均衡的最佳選擇。',
+      'mid-veggie': '【{name}】富含多樣蔬食與植物蛋白，清爽無負擔的均衡之選。',
+      'low-any': '【{name}】輕量蛋白搭配豐富蔬食，適合清爽飲食日或輕斷食日的溫和選擇。',
+      'low-chicken': '【{name}】熱量與蛋白質都控制在清爽範圍，美味無負擔。',
+      'low-pork': '【{name}】適合想享受美味又不想攝取過多油脂的日子。',
+      'low-seafood': '【{name}】風味鮮美，適合清爽輕食日享用。',
+      'low-veggie': '【{name}】提供清爽植物纖維與蛋白，美味無負擔。'
+    };
+
+    function runAI() {
+      aiLoading.value = true;
+      aiResult.value = null;
+      setTimeout(() => {
+        // 只從「今日有供應」(有價格)且未售空的品項中選取
+        const available = menuItems.value.filter(i => !i.soldOut && i.available !== false);
+        let noExactMatch = false;
+
+        // Step 1: Filter by protein level
+        function filterByProtein(items) {
+          if (aiProtein.value === 'high') return items.filter(i => i.protein >= 40);
+          if (aiProtein.value === 'mid') return items.filter(i => i.protein >= 30 && i.protein < 40);
+          return items.filter(i => i.protein < 30);
+        }
+
+        // Step 2: Filter by preference
+        function filterByPref(items) {
+          return aiPref.value !== 'any' ? items.filter(i => i.tags.includes(aiPref.value)) : items;
+        }
+
+        // Try exact match first (both protein + pref)
+        let candidates = filterByPref(filterByProtein(available));
+
+        if (candidates.length === 0) {
+          noExactMatch = true;
+          // Fallback: relax protein filter, keep preference, pick closest protein
+          if (aiPref.value !== 'any') {
+            const prefItems = available.filter(i => i.tags.includes(aiPref.value));
+            if (prefItems.length > 0) {
+              // Sort by closest to target range
+              const target = aiProtein.value === 'high' ? 45 : aiProtein.value === 'mid' ? 35 : 20;
+              prefItems.sort((a, b) => Math.abs(a.protein - target) - Math.abs(b.protein - target));
+              candidates = [prefItems[0]];
+            }
+          }
+          // Last resort: relax preference, keep protein
+          if (candidates.length === 0) {
+            candidates = filterByProtein(available);
+          }
+          // Ultimate fallback
+          if (candidates.length === 0) {
+            candidates = [available[0]];
+          }
+        }
+
+        const pick = candidates[0] || available[0] || menuItems.value[0] || {};
+
+        // 若最終選出的餐點並沒有符合原本要求的肉類屬性 (例如要求海鮮卻配給了雞肉)，則文案改用 'any' (不限肉類)
+        const actualPref = (aiPref.value !== 'any' && pick.tags && pick.tags.includes(aiPref.value)) ? aiPref.value : 'any';
+        const key = aiProtein.value + '-' + actualPref;
+
+        let reasonTemplate = aiReasons[key] || aiReasons[aiProtein.value + '-any'] || aiReasons['high-any'];
+        let reason = reasonTemplate.replace('{name}', pick.name || '推薦餐點');
+
+        if (noExactMatch) {
+          const prefLabel = prefOptions.value.find(p => p.id === aiPref.value)?.label || '';
+          const proteinLabel = proteinOptions.value.find(p => p.id === aiProtein.value)?.label || '';
+
+          if (actualPref === aiPref.value) {
+            // 雖然退而求其次，但至少肉類是對的
+            reason = `目前菜單中沒有同時符合「${prefLabel}」+「${proteinLabel}」的餐點，為您推薦${prefLabel}類中蛋白質最接近的選擇。` + reason;
+          } else {
+            // 連肉類都妥協了
+            reason = `目前菜單中沒有符合「${prefLabel}」且合適的餐點，為您改為推薦其他符合「${proteinLabel}」的優質選擇。` + reason;
+          }
+        }
+        aiResult.value = { ...pick, reason, noExactMatch };
+        aiLoading.value = false;
+      }, 1200);
+    }
+
+    function aiQuickOrder() {
+      if (!aiResult.value) return;
+      // 加入購物車，走跟一般快速點餐完全相同的流程
+      cart.value = [{ ...aiResult.value, qty: 1 }];
+      showCartDrawer.value = true;
+      activeTab.value = 'home';
+      showToastFn('🛒 已加入購物車！確認後請點「確認點餐」送出。');
+    }
+
+    // ──── Photo Analysis ────
+    const fileInput = ref(null);
+    const photoPreviewUrl = ref(null);
+    const photoUploading = ref(false);
+    const photoAnalyzed = ref(false);
+    const isRealAnalysis = ref(false);
+    const analysisResult = ref({ name: '', protein: 0, calories: 0, reason: '' });
+
+    async function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        photoPreviewUrl.value = e.target.result;
+        photoUploading.value = true;
+        photoAnalyzed.value = false;
+
+        try {
+          const base64Data = e.target.result.split(',')[1];
+          const mimeType = file.type || 'image/jpeg';
+
+          // 呼叫後端安全 API，金鑰安全儲存在後端 .env 檔中
+          const res = await fetch(API.analyzePhoto, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image_base64: base64Data,
+              mime_type: mimeType
+            })
+          });
+
+          if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            throw new Error(errData.detail || errData.message || `HTTP 錯誤碼: ${res.status}`);
+          }
+          const data = await res.json();
+          if (data.status === 'success' && data.result) {
+            analysisResult.value = {
+              name: data.result.name || '未知餐點',
+              protein: parseInt(data.result.protein) || 0,
+              calories: parseInt(data.result.calories) || 0,
+              reason: data.note ? `${data.result.reason} (${data.note})` : (data.result.reason || 'AI 分析完成')
+            };
+            isRealAnalysis.value = (data.mode === 'real');
+          } else {
+            throw new Error('回傳資料格式不符');
+          }
+        } catch (err) {
+          console.error('後端 AI 影像分析發生錯誤:', err);
+          // Fallback for API failure with actual error message
+          analysisResult.value = {
+            name: file.name.includes('牛') ? '紅燒牛肉麵 (模擬)' : '雞胸肉健康餐盒 (模擬)',
+            protein: file.name.includes('牛') ? 25 : 32,
+            calories: file.name.includes('牛') ? 650 : 450,
+            reason: `(AI 連線提示: ${err.message})`
+          };
+          isRealAnalysis.value = false;
+        }
+
+        photoUploading.value = false;
+        photoAnalyzed.value = true;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearPhoto() {
+      photoPreviewUrl.value = null;
+      photoUploading.value = false;
+      photoAnalyzed.value = false;
+      if (fileInput.value) fileInput.value.value = '';
+    }
+
+    function confirmPhotoLog() {
+      addTodayProtein(analysisResult.value.protein);
+      showToastFn(`✅ 分析紀錄成功！${t.value.estProt} +${analysisResult.value.protein}g 已更新`);
+      clearPhoto();
+      activeTab.value = 'home';
+    }
+
+    // ──── Teams Bot ────
+    const showTeamsBot = ref(false);
+    const teamsOrdered = ref(false);
+    function teamsOrder() {
+      if (teamsOrdered.value) return;
+      const item = menuItems.value.find(i => i.id === 1);
+      if (item) {
+        const orderItems = [{ ...item, qty: 1 }];
+        activeOrder.value = {
+          items: orderItems,
+          totalPrice: Math.max(0, item.price - 30),
+          totalProtein: item.protein,
+          time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
+        };
+        teamsOrdered.value = true;
+        addTodayProtein(item.protein);
+        const workerId = currentUser.value.id || '11112345';
+        recordOrderToDb(workerId, orderItems, Math.max(0, item.price - 30), item.protein);
+        setEmployeeOrder(workerId, orderItems);
+
+        forwardToSlkCheckout(orderItems, workerId);
+        activeTab.value = 'home';
+      }
+    }
+
+    // ──── Toast ────
+    const showToast = ref(false);
+    const toastMsg = ref('');
+    let toastTimer = null;
+    function showToastFn(msg) {
+      toastMsg.value = msg;
+      showToast.value = true;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { showToast.value = false; }, 2500);
+    }
+
+    // ──── Reset ────
+    function resetData() {
+      weekDays.value = [
+        { label: '週一', protein: 18, isToday: false },
+        { label: '週二', protein: 38, isToday: false },
+        { label: '週三', protein: 28, isToday: true },
+        { label: '週四', protein: 45, isToday: false },
+        { label: '週五', protein: 12, isToday: false },
+        { label: '週六', protein: 0, isToday: false },
+        { label: '週日', protein: 0, isToday: false }
+      ];
+      cart.value = [];
+      aiResult.value = null;
+      teamsOrdered.value = false;
+      proteinGoal.value = 35;
+      activeOrder.value = null; // Clear active order banner
+
+      // Clear employee orders cache
+      slkOrderDb.value = {};
+      saveEmployeeOrderDb();
+
+      // Clear order history cache
+      orderHistoryDb.value = [];
+      saveOrderHistoryDb();
+
+      showToastFn('🔄 所有資料已重置');
+    }
+
+    // ──── Ordering Time Window (全天開放無限制) ────
+    const nowTime = ref(new Date());
+    let clockInterval = null;
+    let cutoffTimer = null;
+
+    const isOrderWindow = computed(() => true);
+    const orderWindowLabel = computed(() => '全天開放');
+    const orderWindowStatus = computed(() => 'open');
+
+    function scheduleCutoff() {
+      // 全天開放，不安排自動截止時間
+    }
+
+    // Close user menu on outside click
+    onMounted(() => {
+      document.addEventListener('click', (e) => {
+        if (showUserMenu.value && !e.target.closest('[class*="user"]')) {
+          // Simplified: close on next tick
+        }
+      });
+      // Start clock tick every 30s
+      clockInterval = setInterval(() => { nowTime.value = new Date(); }, 30000);
+      // Schedule auto cutoff for today
+      scheduleCutoff();
+      importEmployeeOrderFromUrl();
+      syncBackendDb();
+      fetchMenuData();
+    });
+
+    return {
+      isLoggedIn, loginId, loginPassword, loginError, login, logout,
+      isRegisterMode, registerId, registerName, registerPassword, registerError, register,
+      isAdminMode, adminPassword,
+
+      users, currentUser, showUserMenu,
+      tabs, activeTab, tabRefs, tabIndicatorStyle,
+      showProteinTracker, weekDays, todayProtein, weeklyProteinTotal, weeklyGoalTotal, addTodayProtein, bodyWeight, recommendedProtein, proteinGoal, showGoalSetting, maxBarValue,
+      menuItems, isMenuLoading, filterTags, activeFilter, searchQuery, toggleFilter, filteredMenu, unavailableMenu,
+      cart, showCartDrawer, addToCart, incrementCart, decrementCart, cartTotalQty, cartTotalPrice, cartFinalPrice, cartTotalProtein, checkout, slkCheckoutHref, employeeOrder, applyEmployeeOrder,
+      activeOrder, cancelOrder, modifyOrder,
+      mostFrequentItem7Days, hasOrderedToday, quickReorder,
+      proteinOptions, prefOptions, aiProtein, aiPref, aiLoading, aiResult, runAI, aiQuickOrder,
+      fileInput, photoPreviewUrl, photoUploading, photoAnalyzed, handleFileUpload, clearPhoto, confirmPhotoLog,
+      isRealAnalysis, analysisResult,
+      teamsOrdered, teamsOrder, showTeamsBot,
+      showToast, toastMsg, showToastFn,
+      orderHistoryDb, showDbModal, showCanceledOrders, canceledDbRecords, dbSearchQuery, clearOrderHistoryDb, fetchAdminOrders, filteredDbRecords, dbStats,
+      isOrderWindow, orderWindowLabel, orderWindowStatus, nowTime,
+      todayOrderList, showTodayOrderModal, deleteOrder, editOrder,
+      resetData
+    };
+      }
+    }).mount('#app');
+
+    // Debug helper: expose Vue proxy for manual testing in browser console
+    if (window.__slkApp == null) {
+      window.__slkApp = document.getElementById('app')?.__vue_app__?._instance?.proxy || null;
+    }
+  </script>
+</body>
+
+</html>

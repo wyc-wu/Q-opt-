@@ -1,0 +1,12 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+.env.local
+scratch
+*.tar
+*.bat
+*.md
