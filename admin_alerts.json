@@ -1,0 +1,240 @@
+[
+  {
+    "timestamp": "2026-08-19 16:33:11",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: It looks like you are using Playwright Sync API inside the asyncio loop.\nPlease use the Async API instead.。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-19 16:31:48",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: It looks like you are using Playwright Sync API inside the asyncio loop.\nPlease use the Async API instead.。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-19 16:31:35",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: It looks like you are using Playwright Sync API inside the asyncio loop.\nPlease use the Async API instead.。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-12 14:46:30",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.evaluate: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-12 14:15:40",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11122222",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-12 13:49:06",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.evaluate: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-11 10:34:05",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-11 10:33:10",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-11 10:27:52",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:46:40",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.evaluate: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:42:01",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=11331\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:37:05",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:30:51",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:17:50",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:14:18",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:03:51",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=103396\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 16:01:46",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=11331\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 15:58:51",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=11331\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 15:56:21",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=11331\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 11:59:54",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-08-06 11:45:50",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11190289",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=11331\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 17:16:32",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 13:17:25",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=69395\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 11:33:18",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 11:24:33",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.evaluate: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 11:07:32",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11100000",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=98414\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 10:56:33",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=69395\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 10:53:18",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: net::ERR_ABORTED; maybe frame was detached?\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=83669\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 10:23:18",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=98414\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-30 10:12:29",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123456",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-28 11:10:42",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11190289",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-24 10:31:20",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11112345",
+    "details": "尚琳官網 Playwright 定位異常: Page.goto: Target page, context or browser has been closed\nCall log:\n  - navigating to \"https://www.slk9898.com.tw/?p=91945\", waiting until \"domcontentloaded\"\n。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-23 15:29:49",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11112345",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  },
+  {
+    "timestamp": "2026-07-23 15:23:22",
+    "type": "DOM_STRUCTURE_CHANGE_WARNING",
+    "worker_id": "11123445",
+    "details": "尚琳官網 Playwright 定位異常: Locator.count: Target page, context or browser has been closed。已自動引導員工直連官網手動填單。",
+    "status": "UNREAD"
+  }
+]

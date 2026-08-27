@@ -247,16 +247,7 @@
       background: rgba(34, 197, 94, 0.05);
     }
 
-    .teams-bubble {
-      background: linear-gradient(135deg, #464EB8 0%, #5B5FC7 100%);
-    }
 
-    .teams-card {
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
 
     .confetti-piece {
       position: absolute;
@@ -836,7 +827,7 @@
                   <div>
                     <p class="text-xs text-slate-400 mb-0.5">辨識結果 <span v-if="!isRealAnalysis"
                         class="text-amber-500 font-bold">(模擬)</span><span v-else
-                        class="text-emerald-400 font-bold">(AI)</span></p>
+                        class="text-emerald-400 font-bold">(Gemini Vision)</span></p>
                     <p class="text-sm text-emerald-400 font-bold">{{analysisResult.name}}</p>
                   </div>
                 </div>
@@ -1003,100 +994,7 @@
         </div>
       </teleport>
 
-      <!-- ═══════════════ TEAMS BOT WIDGET ═══════════════ -->
-      <teleport to="body">
-        <!-- Floating Bot Button -->
-        <button @click="showTeamsBot = !showTeamsBot"
-          class="fixed bottom-6 right-6 z-[90] w-14 h-14 rounded-2xl shadow-2xl flex items-center justify-center transition-all duration-300 active:scale-90"
-          :class="showTeamsBot ? 'bg-[#4F52B2] rotate-0 scale-110' : 'bg-[#5B5FC7] hover:scale-110'"
-          title="MS Teams 推播">
-          <span class="text-2xl" :class="{'animate-bounce': !showTeamsBot}">🤖</span>
-          <!-- unread dot -->
-          <span v-if="!teamsOrdered"
-            class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 border-2 border-slate-950 flex items-center justify-center text-[9px] font-bold text-white">1</span>
-        </button>
 
-        <!-- Teams popup panel -->
-        <transition name="slide-up">
-          <div v-if="showTeamsBot"
-            class="fixed bottom-24 right-5 z-[89] w-80 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200"
-            style="max-height: 520px;">
-            <!-- Header -->
-            <div class="bg-[#5B5FC7] px-4 py-3 flex items-center gap-2.5">
-              <span class="text-xl">🤖</span>
-              <div class="flex-1">
-                <p class="text-white font-bold text-sm">午餐訂購 Bot</p>
-                <p class="text-white/60 text-[10px]">已連線 MS Teams 頻道</p>
-              </div>
-              <button @click="showTeamsBot = false"
-                class="w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-                <i class="fa-solid fa-xmark text-xs"></i>
-              </button>
-            </div>
-            <!-- Chat area -->
-            <div class="bg-slate-50 p-3 overflow-y-auto" style="max-height: 380px;">
-              <!-- Bot message -->
-              <div class="flex gap-2.5 mb-3">
-                <div
-                  class="w-8 h-8 rounded-full bg-[#5B5FC7] flex items-center justify-center text-white font-bold text-xs shrink-0">
-                  B</div>
-                <div>
-                  <div class="flex items-baseline gap-1.5 mb-1">
-                    <span class="text-xs font-semibold text-slate-700">午餐機器人 Bot</span>
-                    <span class="text-[10px] text-slate-400">今日 10:30</span>
-                  </div>
-                  <!-- Adaptive Card -->
-                  <div class="bg-white rounded-xl overflow-hidden shadow-md border border-slate-200 w-full">
-                    <div
-                      class="h-24 bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center relative">
-                      <span class="text-5xl drop-shadow">🤖</span>
-                      <div
-                        class="absolute top-1.5 left-2 bg-white/25 backdrop-blur-sm text-white px-1.5 py-0.5 rounded-full text-[9px] font-bold">
-                        💡 AI 推薦</div>
-                    </div>
-                    <div class="p-3">
-                      <p class="text-sm font-bold text-slate-800 mb-1">超夠酥炸大雞腿飯</p>
-                      <div class="flex items-center gap-2 mb-2">
-                        <span
-                          class="bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">💪
-                          42g</span>
-                        <span class="font-bold text-emerald-600 text-sm">$110</span>
-                      </div>
-                      <p class="text-[10px] text-slate-500 mb-3">根據昨日運動紀錄，建議攝取充足蛋白質。為下午儲備體力！</p>
-                      <div v-if="!teamsOrdered" class="flex flex-col gap-1.5">
-                        <button @click="teamsOrder"
-                          class="w-full py-2 bg-[#5B5FC7] hover:bg-[#4F52B2] text-white rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1 active:scale-[0.98]">
-                          ⚡ 立即訂購 ({{currentUser.id}})
-                        </button>
-                        <button @click="showTeamsBot=false; activeTab='order'"
-                          class="w-full py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[10px] font-medium transition-colors">
-                          🔎 查看完整菜單
-                        </button>
-                      </div>
-                      <div v-else
-                        class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
-                        <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                        <span class="text-xs text-emerald-700 font-semibold">已成功預訂！</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Info message -->
-              <div class="flex gap-2.5">
-                <div
-                  class="w-8 h-8 rounded-full bg-[#5B5FC7] flex items-center justify-center text-white font-bold text-xs shrink-0">
-                  B</div>
-                <div class="bg-white rounded-xl p-2.5 border border-slate-200 shadow-sm max-w-[90%]">
-                  <p class="text-[10px] text-slate-500"><i class="fa-solid fa-circle-info text-blue-400 mr-1"></i>Teams
-                    推播於每日 <strong>10:30</strong> 自動發送，訂單成功後會回傳確認訊息。</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </transition>
-      </teleport>
 
       <!-- ═══════════════ ORDER SUCCESS TOAST ═══════════════ -->
       <teleport to="body">
@@ -1256,8 +1154,7 @@
 
   <script>
     const { createApp, ref, computed, watch, watchEffect, nextTick, onMounted } = Vue;
-    // 動態取得當前伺服器網址與 Port（相容於 Linux 部署與本機開發）
-    const API_BASE = window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000';
+    const API_BASE = 'http://127.0.0.1:8000';
     const API = {
       menu: `${API_BASE}/api/menu`,
       checkout: `${API_BASE}/api/checkout`,
@@ -1318,7 +1215,7 @@
 
         async function fetchUserData(empId) {
           try {
-            const res = await fetch(`${API_BASE}/api/user/me?employee_id=${empId}`);
+            const res = await fetch(`http://localhost:8000/api/user/me?employee_id=${empId}`);
             if (res.ok) {
               const data = await res.json();
               // 更新真實姓名
@@ -1358,7 +1255,7 @@
           }
           loginError.value = '';
           try {
-            const res = await fetch(`${API_BASE}/api/login`, {
+            const res = await fetch('http://localhost:8000/api/login', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ employee_id: inputId, password: loginPassword.value })
@@ -1389,7 +1286,7 @@
           }
           registerError.value = '';
           try {
-            const res = await fetch(`${API_BASE}/api/register`, {
+            const res = await fetch('http://localhost:8000/api/register', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ employee_id: inputId, password: registerPassword.value, name: registerName.value })
@@ -1752,7 +1649,7 @@
 
         async function fetchAdminOrders() {
           try {
-            const res = await fetch(`${API_BASE}/api/orders`);
+            const res = await fetch('http://localhost:8000/api/orders');
             if (res.ok) {
               const data = await res.json();
               orderHistoryDb.value = data.orders.map(o => {
@@ -1904,7 +1801,7 @@
 
         async function syncBackendDb() {
           try {
-            const res = await fetch(`${API_BASE}/api/orders`);
+            const res = await fetch('http://localhost:8000/api/orders');
             if (res.ok) {
               const data = await res.json();
               if (data.orders && Array.isArray(data.orders)) {
@@ -1961,7 +1858,7 @@
 
             console.log("🚀 [Checkout Payload]:", payload);
 
-            const res = await fetch(`${API_BASE}/api/orders`, {
+            const res = await fetch('http://localhost:8000/api/orders', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload)
@@ -2011,7 +1908,7 @@
         async function deleteOrder(orderId) {
           if (!confirm("確定要取消這筆訂單嗎？取消後需自行重新下單。")) return;
           try {
-            const res = await fetch(`${API_BASE}/api/orders/${orderId}`, {
+            const res = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -2032,7 +1929,7 @@
         async function editOrder(order) {
           if (!confirm("修改訂單會將原本的訂單取消，並將餐點加回購物車讓您重新結帳。確定要修改嗎？")) return;
           try {
-            const res = await fetch(`${API_BASE}/api/orders/${order.id}`, {
+            const res = await fetch(`http://localhost:8000/api/orders/${order.id}`, {
               method: 'DELETE'
             });
             if (res.ok) {
@@ -2309,30 +2206,7 @@
       activeTab.value = 'home';
     }
 
-    // ──── Teams Bot ────
-    const showTeamsBot = ref(false);
-    const teamsOrdered = ref(false);
-    function teamsOrder() {
-      if (teamsOrdered.value) return;
-      const item = menuItems.value.find(i => i.id === 1);
-      if (item) {
-        const orderItems = [{ ...item, qty: 1 }];
-        activeOrder.value = {
-          items: orderItems,
-          totalPrice: Math.max(0, item.price - 30),
-          totalProtein: item.protein,
-          time: new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })
-        };
-        teamsOrdered.value = true;
-        addTodayProtein(item.protein);
-        const workerId = currentUser.value.id || '11112345';
-        recordOrderToDb(workerId, orderItems, Math.max(0, item.price - 30), item.protein);
-        setEmployeeOrder(workerId, orderItems);
 
-        forwardToSlkCheckout(orderItems, workerId);
-        activeTab.value = 'home';
-      }
-    }
 
     // ──── Toast ────
     const showToast = ref(false);
@@ -2358,7 +2232,6 @@
       ];
       cart.value = [];
       aiResult.value = null;
-      teamsOrdered.value = false;
       proteinGoal.value = 35;
       activeOrder.value = null; // Clear active order banner
 
@@ -2417,7 +2290,6 @@
       proteinOptions, prefOptions, aiProtein, aiPref, aiLoading, aiResult, runAI, aiQuickOrder,
       fileInput, photoPreviewUrl, photoUploading, photoAnalyzed, handleFileUpload, clearPhoto, confirmPhotoLog,
       isRealAnalysis, analysisResult,
-      teamsOrdered, teamsOrder, showTeamsBot,
       showToast, toastMsg, showToastFn,
       orderHistoryDb, showDbModal, showCanceledOrders, canceledDbRecords, dbSearchQuery, clearOrderHistoryDb, fetchAdminOrders, filteredDbRecords, dbStats,
       isOrderWindow, orderWindowLabel, orderWindowStatus, nowTime,

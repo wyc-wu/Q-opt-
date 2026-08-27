@@ -1,0 +1,6 @@
+.env
+orders.db
+playwright_debug.log
+__pycache__/
+.venv/
+admin_alerts.json

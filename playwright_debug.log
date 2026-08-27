@@ -1,0 +1,326 @@
+[2026-08-20 15:43:51] Order saved to DB successfully: ID=102, Code=ORD-20260820154351-11100000, Employee=11100000, SubsidyApplied=$0
+[2026-08-20 15:43:51] [模式 B] 訂單成功落盤 ID=102，啟動 Playwright 自動化流程: 11100000
+[2026-08-20 15:43:51] run_playwright thread started. URL: https://www.slk9898.com.tw/checkout/?add-to-cart=16931&quantity=1&billing_first_name=11100000&billing_company=%E5%B7%A5%E8%99%9F%3A11100000&order_comments=%E5%93%A1%E5%B7%A5%E5%B7%A5%E8%99%9F%3A11100000, ID: 11100000, items: [{'id': 1, 'name': '明火炭烤挪威鯖魚飯', 'price': 0, 'protein': 25, 'qty': 1, 'product_id': 16931}]
+[2026-08-20 15:43:53] [步驟 1] 開啟單品頁面以帶入工號與套用員工補助: 明火炭烤挪威鯖魚飯 (ID: 16931) -> https://www.slk9898.com.tw/?p=16931
+[2026-08-20 15:43:59] [步驟 2] 準備在此購物車頁面按下『前往結帳』按鈕...
+[2026-08-20 15:44:01] [步驟 2] 找到『前往結帳』按鈕，模擬點擊中...
+[2026-08-20 15:44:31] [步驟 2] 點擊按鈕提示: Locator.scroll_into_view_if_needed: Timeout 29973ms exceeded.
+Call log:
+  - attempting scroll into view action
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+    - waiting 20ms
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+      - waiting 100ms
+    56 × waiting for element to be stable
+       - element is not visible
+     - retrying scroll into view action
+       - waiting 500ms
+
+[2026-08-20 15:44:33] [步驟 2] 網址 (https://www.slk9898.com.tw/products/%e5%85%81%e6%8c%87%e5%9b%9e%e5%91%b3%e7%82%99%e9%af%96%e9%ad%9a%e9%a3%af%e8%b6%85%e7%b4%9a%e8%b3%a3/) 仍在購物車，自動跳轉至乾淨結帳頁: https://www.slk9898.com.tw/checkout/
+[2026-08-20 15:44:39] [步驟 3] 於結帳頁面自動將綁定工號輸入至欄位: 11100000
+[2026-08-20 15:44:39] 🚀 Playwright 已自動完成選菜、帶入工號與跳轉結帳頁，準備自動按下『下訂單』按鈕...
+[2026-08-20 15:44:41] ⚠️ [步驟 4] 找不到或無法點擊『下訂單』按鈕（可能非開放點餐時段）
+[2026-08-20 15:44:41] 🏁 Playwright 瀏覽器已自動關閉，下單結果: False
+[2026-08-20 15:48:01] [取消流程] 已成功軟刪除 ID=ORD-20260820154351-11100000，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號=11100000, 日期=2026-08-20
+[2026-08-20 15:48:01] run_playwright_delete_order thread started. Worker ID: 11100000, Date: 2026-08-20
+[2026-08-20 15:48:02] 📡 Teams 通知發送狀態 (202): ORDER_CANCEL - 工號 11100000
+[2026-08-20 15:48:04] [取消流程] 開啟尚琳訂餐查詢頁面: https://www.slk9898.com.tw/%e8%a8%82%e9%a4%90%e6%9f%a5%e8%a9%a2/
+[2026-08-20 15:48:09] [取消流程] 已輸入工號: 11100000
+[2026-08-20 15:48:09] [取消流程] 已選擇查詢日期: 2026-08-20
+[2026-08-20 15:48:10] [取消流程] 已按下『查詢』按鈕，等待搜尋結果...
+[2026-08-20 15:48:14] ℹ️ [取消流程] 未在尚琳官網搜尋結果中找到可刪除的按鈕（可能已過可取消時段或無訂單）
+[2026-08-20 16:43:09] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-20 16:43:10] Database schema migration completed.
+[2026-08-20 16:43:12] ⏰ 檢測到時間為 16:43 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-20 16:43:13] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-20 16:43:13] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-20 16:43:13] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 最新商品
+[2026-08-20 17:06:33] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-20 17:06:34] Database schema migration completed.
+[2026-08-20 17:06:35] 🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...
+[2026-08-20 17:06:35] ⏰ 檢測到時間為 17:06 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-20 17:06:36] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-20 17:06:37] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-20 17:06:37] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 溫馨八月
+[2026-08-20 17:07:08] ✅ [Crawler] 啟動補跑完成，menu.json 已更新
+[2026-08-21 09:28:57] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-21 09:28:57] Database schema migration completed.
+[2026-08-21 09:28:59] 🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...
+[2026-08-21 09:29:00] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-21 09:29:31] ✅ [Crawler] 啟動補跑完成，menu.json 已更新
+[2026-08-21 09:30:29] ⏰ 檢測到時間為 09:30 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-21 09:30:30] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-21 09:30:30] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 250元!!請提早預訂!!!3
+[2026-08-21 09:36:51] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-21 09:36:51] Database schema migration completed.
+[2026-08-21 09:37:27] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-21 09:37:27] Database schema migration completed.
+[2026-08-21 09:37:28] 🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...
+[2026-08-21 09:37:28] ⏰ 檢測到時間為 09:37 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-21 09:37:28] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-21 09:37:29] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-21 09:37:30] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 明火炭烤挪威鯖魚飯
+[2026-08-21 09:37:54] ✅ [Crawler] 啟動補跑完成，menu.json 已更新
+[2026-08-21 09:43:25] Order saved to DB successfully: ID=103, Code=ORD-20260821094325-11100000, Employee=11100000, SubsidyApplied=$30
+[2026-08-21 09:43:25] [模式 B] 訂單成功落盤 ID=103，啟動 Playwright 自動化流程: 11100000
+[2026-08-21 09:43:25] run_playwright thread started. URL: https://www.slk9898.com.tw/checkout/?add-to-cart=83669&quantity=1&billing_first_name=11100000&billing_company=%E5%B7%A5%E8%99%9F%3A11100000&order_comments=%E5%93%A1%E5%B7%A5%E5%B7%A5%E8%99%9F%3A11100000, ID: 11100000, items: [{'id': 8, 'name': '紅燒無骨滷排飯', 'price': 110, 'protein': 25, 'qty': 1, 'product_id': 83669}]
+[2026-08-21 09:43:28] [步驟 1] 開啟單品頁面以帶入工號與套用員工補助: 紅燒無骨滷排飯 (ID: 83669) -> https://www.slk9898.com.tw/?p=83669
+[2026-08-21 09:43:34] ✅ 已成功將工號 11100000 自動填入單品頁『請輸入訂餐工號或貴賓名稱』欄位
+[2026-08-21 09:43:35] [步驟 1] 按下單品頁『加入購物車』按鈕...
+[2026-08-21 09:43:40] [步驟 2] 準備在此購物車頁面按下『前往結帳』按鈕...
+[2026-08-21 09:43:42] [步驟 2] 找到『前往結帳』按鈕，模擬點擊中...
+[2026-08-21 09:44:12] [步驟 2] 點擊按鈕提示: Locator.scroll_into_view_if_needed: Timeout 29979ms exceeded.
+Call log:
+  - attempting scroll into view action
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+    - waiting 20ms
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+      - waiting 100ms
+    56 × waiting for element to be stable
+       - element is not visible
+     - retrying scroll into view action
+       - waiting 500ms
+
+[2026-08-21 09:44:14] [步驟 2] 網址 (https://www.slk9898.com.tw/%e8%b3%bc%e7%89%a9%e8%bb%8a/) 仍在購物車，自動跳轉至乾淨結帳頁: https://www.slk9898.com.tw/checkout/
+[2026-08-21 09:44:18] [步驟 3] 於結帳頁面自動將綁定工號輸入至欄位: 11100000
+[2026-08-21 09:44:18] ℹ️ 欄位 input[placeholder*='工號'] 已自動代入並設為唯讀
+[2026-08-21 09:44:18] ℹ️ 欄位 #billing_first_name 已自動代入並設為唯讀
+[2026-08-21 09:44:18] 🚀 Playwright 已自動完成選菜、帶入工號與跳轉結帳頁，準備自動按下『下訂單』按鈕...
+[2026-08-21 09:44:22] ✅ [步驟 4] 已自動按下『下訂單』按鈕！工號 11100000 的訂單已送出！
+[2026-08-21 09:44:27] ✅ 訂單流程全部完成！最終頁面網址: https://www.slk9898.com.tw/checkout/
+[2026-08-21 09:44:27] 📡 Teams 通知發送狀態 (202): ORDER_SUCCESS - 工號 11100000
+[2026-08-21 09:44:28] 🏁 Playwright 瀏覽器已自動關閉，下單結果: True
+[2026-08-21 09:44:37] [取消流程] 已成功軟刪除 ID=ORD-20260821094325-11100000，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號=11100000, 日期=2026-08-21
+[2026-08-21 09:44:37] run_playwright_delete_order thread started. Worker ID: 11100000, Date: 2026-08-21
+[2026-08-21 09:44:38] 📡 Teams 通知發送狀態 (202): ORDER_CANCEL - 工號 11100000
+[2026-08-21 09:44:39] [取消流程] 開啟尚琳訂餐查詢頁面: https://www.slk9898.com.tw/%e8%a8%82%e9%a4%90%e6%9f%a5%e8%a9%a2/
+[2026-08-21 09:44:43] [取消流程] 已輸入工號: 11100000
+[2026-08-21 09:44:43] [取消流程] 已選擇查詢日期: 2026-08-21
+[2026-08-21 09:44:44] [取消流程] 已按下『查詢』按鈕，等待搜尋結果...
+[2026-08-21 09:44:48] [取消流程] 找到 1 個刪除按鈕，準備依序自動刪除...
+[2026-08-21 09:44:48] ✅ [取消流程] 已點擊尚琳官網『刪除』按鈕！
+[2026-08-21 09:44:50] 🎉 [取消流程] 已成功於尚琳官網『訂餐查詢』自動刪除工號 11100000 的訂單！
+[2026-08-24 10:21:39] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-24 10:21:39] Database schema migration completed.
+[2026-08-24 10:21:41] ⏰ 檢測到時間為 10:21 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-24 10:21:41] 🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...
+[2026-08-24 10:21:41] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-24 10:21:42] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-24 10:21:42] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 燒控肉!!!溫體豬肉全國漲價!我不怕!!!當日新鮮現做!!只接受預訂
+[2026-08-24 10:21:57] ✅ [Crawler] 啟動補跑完成，menu.json 已更新
+[2026-08-24 16:01:18] Order saved to DB successfully: ID=104, Code=ORD-20260824160118-11123456, Employee=11123456, SubsidyApplied=$30
+[2026-08-24 16:01:18] run_playwright thread started. URL: https://www.slk9898.com.tw/checkout/?add-to-cart=14626&quantity=1&billing_first_name=11123456&billing_company=%E5%B7%A5%E8%99%9F%3A11123456&order_comments=%E5%93%A1%E5%B7%A5%E5%B7%A5%E8%99%9F%3A11123456, ID: 11123456, items: [{'id': 1, 'name': '燒控肉!!!溫體豬肉全國漲價!我不怕!!!當日新鮮現做!!只接受預訂', 'price': 120, 'protein': 25, 'qty': 1}]
+[2026-08-24 16:01:21] [步驟 1] 開啟單品頁面以帶入工號與套用員工補助: 燒控肉!!!溫體豬肉全國漲價!我不怕!!!當日新鮮現做!!只接受預訂 (ID: 14626) -> https://www.slk9898.com.tw/?p=14626
+[2026-08-24 16:01:24] Order saved to DB successfully: ID=105, Code=ORD-20260824160124-11123456, Employee=11123456, SubsidyApplied=$0
+[2026-08-24 16:01:24] run_playwright thread started. URL: https://www.slk9898.com.tw/checkout/?add-to-cart=14626&quantity=1&billing_first_name=11123456&billing_company=%E5%B7%A5%E8%99%9F%3A11123456&order_comments=%E5%93%A1%E5%B7%A5%E5%B7%A5%E8%99%9F%3A11123456, ID: 11123456, items: [{'id': 1, 'name': '燒控肉!!!溫體豬肉全國漲價!我不怕!!!當日新鮮現做!!只接受預訂', 'price': 120, 'protein': 25, 'qty': 1}]
+[2026-08-24 16:01:26] [步驟 1] 開啟單品頁面以帶入工號與套用員工補助: 燒控肉!!!溫體豬肉全國漲價!我不怕!!!當日新鮮現做!!只接受預訂 (ID: 14626) -> https://www.slk9898.com.tw/?p=14626
+[2026-08-24 16:01:33] ✅ 已成功將工號 11123456 自動填入單品頁『請輸入訂餐工號或貴賓名稱』欄位
+[2026-08-24 16:01:33] ✅ 已成功將工號 11123456 自動填入單品頁『請輸入訂餐工號或貴賓名稱』欄位
+[2026-08-24 16:01:33] [步驟 1] 按下單品頁『加入購物車』按鈕...
+[2026-08-24 16:01:33] [步驟 1] 按下單品頁『加入購物車』按鈕...
+[2026-08-24 16:01:38] [步驟 2] 準備在此購物車頁面按下『前往結帳』按鈕...
+[2026-08-24 16:01:38] [步驟 2] 準備在此購物車頁面按下『前往結帳』按鈕...
+[2026-08-24 16:01:41] [步驟 2] 找到『前往結帳』按鈕，模擬點擊中...
+[2026-08-24 16:01:41] [步驟 2] 找到『前往結帳』按鈕，模擬點擊中...
+[2026-08-24 16:02:11] [步驟 2] 點擊按鈕提示: Locator.scroll_into_view_if_needed: Timeout 29979ms exceeded.
+Call log:
+  - attempting scroll into view action
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+    - waiting 20ms
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+      - waiting 100ms
+    57 × waiting for element to be stable
+       - element is not visible
+     - retrying scroll into view action
+       - waiting 500ms
+
+[2026-08-24 16:02:11] [步驟 2] 點擊按鈕提示: Locator.scroll_into_view_if_needed: Timeout 29980ms exceeded.
+Call log:
+  - attempting scroll into view action
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+    - waiting 20ms
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+      - waiting 100ms
+    57 × waiting for element to be stable
+       - element is not visible
+     - retrying scroll into view action
+       - waiting 500ms
+
+[2026-08-24 16:02:13] [步驟 2] 網址 (https://www.slk9898.com.tw/%e8%b3%bc%e7%89%a9%e8%bb%8a/) 仍在購物車，自動跳轉至乾淨結帳頁: https://www.slk9898.com.tw/checkout/
+[2026-08-24 16:02:13] [步驟 2] 網址 (https://www.slk9898.com.tw/%e8%b3%bc%e7%89%a9%e8%bb%8a/) 仍在購物車，自動跳轉至乾淨結帳頁: https://www.slk9898.com.tw/checkout/
+[2026-08-24 16:02:20] [步驟 3] 於結帳頁面自動將綁定工號輸入至欄位: 11123456
+[2026-08-24 16:02:20] ℹ️ 欄位 input[placeholder*='工號'] 已自動代入並設為唯讀
+[2026-08-24 16:02:20] ℹ️ 欄位 #billing_first_name 已自動代入並設為唯讀
+[2026-08-24 16:02:20] 🚀 Playwright 已自動完成選菜、帶入工號與跳轉結帳頁，準備自動按下『下訂單』按鈕...
+[2026-08-24 16:02:23] ✅ [步驟 4] 已自動按下『下訂單』按鈕！工號 11123456 的訂單已送出！
+[2026-08-24 16:02:28] ✅ 訂單流程全部完成！最終頁面網址: https://www.slk9898.com.tw/checkout/
+[2026-08-24 16:02:29] 📡 Teams 通知發送狀態 (202): ORDER_SUCCESS - 工號 11123456
+[2026-08-24 16:02:30] 🏁 Playwright 瀏覽器已自動關閉，下單結果: True
+[2026-08-24 16:02:56] [步驟 3] 於結帳頁面自動將綁定工號輸入至欄位: 11123456
+[2026-08-24 16:02:56] ℹ️ 欄位 input[placeholder*='工號'] 已自動代入並設為唯讀
+[2026-08-24 16:02:56] ℹ️ 欄位 #billing_first_name 已自動代入並設為唯讀
+[2026-08-24 16:02:56] 🚀 Playwright 已自動完成選菜、帶入工號與跳轉結帳頁，準備自動按下『下訂單』按鈕...
+[2026-08-24 16:02:59] ✅ [步驟 4] 已自動按下『下訂單』按鈕！工號 11123456 的訂單已送出！
+[2026-08-24 16:03:04] ✅ 訂單流程全部完成！最終頁面網址: https://www.slk9898.com.tw/checkout/
+[2026-08-24 16:03:05] 📡 Teams 通知發送狀態 (202): ORDER_SUCCESS - 工號 11123456
+[2026-08-24 16:03:05] 🏁 Playwright 瀏覽器已自動關閉，下單結果: True
+[2026-08-27 15:11:55] MySQL connection failed ((pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'localhost' ([WinError 10061] 無法連線，因為目標電腦拒絕連線。)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)). Falling back to SQLite.
+[2026-08-27 15:11:55] Database schema migration completed.
+[2026-08-27 15:11:56] 🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...
+[2026-08-27 15:11:56] ⏰ 檢測到時間為 15:11 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...
+[2026-08-27 15:11:56] --- Starting FastAPI Server with Uvicorn ---
+[2026-08-27 15:11:57] 📡 09:30 Teams 推薦推播完成 (202)
+[2026-08-27 15:11:57] 📡 智饗群組頻道 09:30 隨機推薦推播完成 (202): 川味家常肉絲飯
+[2026-08-27 15:12:31] ✅ [Crawler] 啟動補跑完成，menu.json 已更新
+[2026-08-27 15:14:41] 📸 開始分析照片... (Mock Mode: False)
+[2026-08-27 15:14:41] 📡 向 Gemini API 發送請求...
+[2026-08-27 15:15:06] ⚠️ Gemini API 返回錯誤 (503): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.，降級使用模擬數據
+[2026-08-27 15:27:20] 📸 開始分析照片... (Mock Mode: False)
+[2026-08-27 15:27:20] 📡 向 Gemini API 發送請求...
+[2026-08-27 15:27:51] ❌ Gemini Proxy 錯誤: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=30)
+Traceback (most recent call last):
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\http\client.py", line 1459, in getresponse
+    response.begin()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\http\client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\http\client.py", line 297, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\socket.py", line 729, in readinto
+    return self._sock.recv_into(b)
+           ~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\ssl.py", line 1304, in recv_into
+    return self.read(nbytes, buffer)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\t90289\AppData\Roaming\uv\python\cpython-3.14-windows-x86_64-none\Lib\ssl.py", line 1138, in read
+    return self._sslobj.read(len, buffer)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+TimeoutError: The read operation timed out
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\adapters.py", line 696, in send
+    resp = conn.urlopen(
+        method=request.method,
+    ...<9 lines>...
+        chunked=chunked,
+    )
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]
+    )
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\util\retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\util\util.py", line 39, in reraise
+    raise value
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+        conn,
+    ...<10 lines>...
+        **response_kw,
+    )
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connectionpool.py", line 536, in _make_request
+    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\urllib3\connectionpool.py", line 367, in _raise_timeout
+    raise ReadTimeoutError(
+        self, url, f"Read timed out. (read timeout={timeout_value})"
+    ) from err
+urllib3.exceptions.ReadTimeoutError: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=30)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\t90289\.gemini\antigravity\scratch\server.py", line 960, in analyze_photo_endpoint
+    res = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\api.py", line 134, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "C:\Users\t90289\.gemini\antigravity\scratch\.venv\Lib\site-packages\requests\adapters.py", line 742, in send
+    raise ReadTimeout(e, request=request)
+requests.exceptions.ReadTimeout: HTTPSConnectionPool(host='generativelanguage.googleapis.com', port=443): Read timed out. (read timeout=30)
+，降級使用模擬數據
+[2026-08-27 15:52:21] 📸 開始分析照片... (Mock Mode: False)
+[2026-08-27 15:52:21] 📡 向 Gemini API 發送請求...
+[2026-08-27 15:52:26] ⚠️ Gemini API 返回錯誤 (503): This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.，降級使用模擬數據
+[2026-08-27 16:40:11] 📸 開始分析照片... (Mock Mode: False)
+[2026-08-27 16:40:11] 📡 向 Gemini API 發送請求...
+[2026-08-27 16:40:11] ⚠️ Gemini API 返回錯誤 (401): Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.，降級使用模擬數據
+[2026-08-27 16:42:02] Order saved to DB successfully: ID=106, Code=ORD-20260827164202-11100000, Employee=11100000, SubsidyApplied=$30
+[2026-08-27 16:42:02] [模式 B] 訂單成功落盤 ID=106，啟動 Playwright 自動化流程: 11100000
+[2026-08-27 16:42:02] run_playwright thread started. URL: https://www.slk9898.com.tw/checkout/?add-to-cart=91945&quantity=1&billing_first_name=11100000&billing_company=%E5%B7%A5%E8%99%9F%3A11100000&order_comments=%E5%93%A1%E5%B7%A5%E5%B7%A5%E8%99%9F%3A11100000, ID: 11100000, items: [{'id': 4, 'name': '川味家常肉絲飯', 'price': 110, 'protein': 30, 'qty': 1, 'product_id': 91945}]
+[2026-08-27 16:42:04] [步驟 1] 開啟單品頁面以帶入工號與套用員工補助: 川味家常肉絲飯 (ID: 91945) -> https://www.slk9898.com.tw/?p=91945
+[2026-08-27 16:42:17] ✅ 已成功將工號 11100000 自動填入單品頁『請輸入訂餐工號或貴賓名稱』欄位
+[2026-08-27 16:42:18] [步驟 1] 按下單品頁『加入購物車』按鈕...
+[2026-08-27 16:42:23] [步驟 2] 準備在此購物車頁面按下『前往結帳』按鈕...
+[2026-08-27 16:42:25] [步驟 2] 找到『前往結帳』按鈕，模擬點擊中...
+[2026-08-27 16:42:55] [步驟 2] 點擊按鈕提示: Locator.scroll_into_view_if_needed: Timeout 29986ms exceeded.
+Call log:
+  - attempting scroll into view action
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+    - waiting 20ms
+    2 × waiting for element to be stable
+      - element is not visible
+    - retrying scroll into view action
+      - waiting 100ms
+    57 × waiting for element to be stable
+       - element is not visible
+     - retrying scroll into view action
+       - waiting 500ms
+
+[2026-08-27 16:42:57] [步驟 2] 網址 (https://www.slk9898.com.tw/%e8%b3%bc%e7%89%a9%e8%bb%8a/) 仍在購物車，自動跳轉至乾淨結帳頁: https://www.slk9898.com.tw/checkout/
+[2026-08-27 16:43:01] [步驟 3] 於結帳頁面自動將綁定工號輸入至欄位: 11100000
+[2026-08-27 16:43:01] ℹ️ 欄位 input[placeholder*='工號'] 已自動代入並設為唯讀
+[2026-08-27 16:43:01] ℹ️ 欄位 #billing_first_name 已自動代入並設為唯讀
+[2026-08-27 16:43:01] 🚀 Playwright 已自動完成選菜、帶入工號與跳轉結帳頁，準備自動按下『下訂單』按鈕...
+[2026-08-27 16:43:04] ✅ [步驟 4] 已自動按下『下訂單』按鈕！工號 11100000 的訂單已送出！
+[2026-08-27 16:43:09] ✅ 訂單流程全部完成！最終頁面網址: https://www.slk9898.com.tw/checkout/
+[2026-08-27 16:43:10] 📡 Teams 通知發送狀態 (202): ORDER_SUCCESS - 工號 11100000
+[2026-08-27 16:43:10] 🏁 Playwright 瀏覽器已自動關閉，下單結果: True
+[2026-08-27 16:43:18] [取消流程] 已成功軟刪除 ID=ORD-20260827164202-11100000，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號=11100000, 日期=2026-08-27
+[2026-08-27 16:43:18] run_playwright_delete_order thread started. Worker ID: 11100000, Date: 2026-08-27
+[2026-08-27 16:43:19] 📡 Teams 通知發送狀態 (202): ORDER_CANCEL - 工號 11100000
+[2026-08-27 16:43:20] [取消流程] 開啟尚琳訂餐查詢頁面: https://www.slk9898.com.tw/%e8%a8%82%e9%a4%90%e6%9f%a5%e8%a9%a2/
+[2026-08-27 16:43:24] [取消流程] 已輸入工號: 11100000
+[2026-08-27 16:43:24] [取消流程] 已選擇查詢日期: 2026-08-27
+[2026-08-27 16:43:24] [取消流程] 已按下『查詢』按鈕，等待搜尋結果...
+[2026-08-27 16:43:28] ℹ️ [取消流程] 未在尚琳官網搜尋結果中找到可刪除的按鈕（可能已過可取消時段或無訂單）

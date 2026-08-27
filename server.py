@@ -16,11 +16,12 @@ import json
 import asyncio
 import threading
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
 from urllib.parse import urlparse, parse_qs
 import hashlib
+import requests
 import crawler
 
 # ==========================================
@@ -194,6 +195,8 @@ def save_order_to_db(employee_id: str, items: list, total_price: int, total_prot
     try:
         emp_id = (employee_id or "11112345").strip()
         now = datetime.now()
+        # order_date 永遠存今天（使用者下單當天），供前端今日點餐紀錄使用
+        # Playwright 刪除時會另外判斷尚琳官網的日期（超過 13:00 則查隔天）
         order_date = now.strftime("%Y-%m-%d")
         order_time = now.strftime("%H:%M:%S")
 
@@ -278,10 +281,75 @@ def get_product_id_for_item(item):
             return pid
     return 14626
 
+def send_teams_notification(worker_id, order_code, items_dict, total_price, action_type="ORDER_SUCCESS"):
+    teams_url = os.environ.get("TEAMS_WEBHOOK_URL", "").strip()
+    if not teams_url:
+        return
+
+    try:
+        import requests
+        if isinstance(items_dict, list):
+            items_summary = ", ".join([f"{it.get('name', '餐點')} x{it.get('qty', 1)}" for it in items_dict])
+        elif isinstance(items_dict, str):
+            try:
+                parsed_items = json.loads(items_dict)
+                items_summary = ", ".join([f"{it.get('name', '餐點')} x{it.get('qty', 1)}" for it in parsed_items])
+            except Exception:
+                items_summary = items_dict
+        else:
+            items_summary = str(items_dict)
+        
+        if action_type == "ORDER_SUCCESS":
+            title = f"✅ 工號 {worker_id} 下單成功！"
+            color = "Good"
+            status_text = "✅ 已成功下單並轉送官網"
+        else:
+            title = "🗑️ 尚琳廚苑 - 訂單取消通知"
+            color = "Attention"
+            status_text = "⚠️ 訂單已取消"
+
+        card = {
+            "type": "message",
+            "attachments": [
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "contentUrl": None,
+                    "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptivecard.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.2",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": title,
+                                "weight": "Bolder",
+                                "size": "Medium",
+                                "color": color
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": [
+                                    {"title": "取餐工號", "value": str(worker_id)},
+                                    {"title": "訂單單號", "value": str(order_code)},
+                                    {"title": "訂購餐點", "value": items_summary},
+                                    {"title": "總金額", "value": f"NT$ {total_price}"},
+                                    {"title": "處理狀態", "value": status_text}
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        res = requests.post(teams_url, json=card, headers={"Content-Type": "application/json"}, timeout=10)
+        log_debug(f"📡 Teams 通知發送狀態 ({res.status_code}): {action_type} - 工號 {worker_id}")
+    except Exception as e:
+        log_debug(f"⚠️ 發送 Teams 通知失敗: {e}")
+
 # ==========================================
 # 2. Playwright Automation Runner
 # ==========================================
-def run_playwright(checkout_url, worker_id, items_list=None, product_id=None, quantity=1):
+def run_playwright(checkout_url, worker_id, items_list=None, product_id=None, quantity=1, order_code=None, total_price=0):
     log_debug(f"run_playwright thread started. URL: {checkout_url}, ID: {worker_id}, items: {items_list}")
     try:
         loop = asyncio.new_event_loop()
@@ -428,6 +496,8 @@ def run_playwright(checkout_url, worker_id, items_list=None, product_id=None, qu
                 log_debug(f"Autofill info: {e}")
 
             # 步驟 4：自動按下「下訂單」按鈕完成最終結帳
+            success_status = False
+            fail_reason = "尚琳官網目前非開放點餐時段，或結帳按鈕無法點擊"
             try:
                 time.sleep(2)
                 place_order_btn = page.locator("#place_order, button[name='woocommerce_checkout_place_order'], button:has-text('下單購買'), button:has-text('下訂單'), input[name='woocommerce_checkout_place_order']").first
@@ -437,14 +507,29 @@ def run_playwright(checkout_url, worker_id, items_list=None, product_id=None, qu
                     place_order_btn.click(force=True, timeout=15000)
                     log_debug(f"✅ [步驟 4] 已自動按下『下訂單』按鈕！工號 {worker_id} 的訂單已送出！")
                     time.sleep(5)  # 等待訂單處理完成
-                    log_debug(f"✅ 訂單流程全部完成！最終頁面網址: {page.url}")
+                    final_url = page.url
+                    log_debug(f"✅ 訂單流程全部完成！最終頁面網址: {final_url}")
+
+                    # 檢查是否真正進入尚琳官網訂單完成頁 (order-received)
+                    page_text = page.inner_text("body") if page else ""
+                    if "order-received" in final_url or "order_received" in final_url or "已經收到您的訂單" in page_text or "收到您的訂單" in page_text:
+                        code_str = order_code if order_code else f"ORD-{worker_id}"
+                        send_teams_notification(worker_id, code_str, items_list, total_price, "ORDER_SUCCESS")
+                        success_status = True
+                        fail_reason = "OK"
+                    else:
+                        log_debug(f"⚠️ 未能確認完成訂單頁，可能為非開放點餐時段: {final_url}")
+                        fail_reason = "尚琳官網目前非開放點餐時段，或訂單尚未成立"
                 else:
-                    log_debug("⚠️ [步驟 4] 找不到『下訂單』按鈕，請確認結帳頁面結構")
+                    log_debug("⚠️ [步驟 4] 找不到或無法點擊『下訂單』按鈕（可能非開放點餐時段）")
+                    fail_reason = "尚琳官網目前非開放點餐時段（結帳按鈕未開啟）"
             except Exception as e:
                 log_debug(f"⚠️ [步驟 4] 按下『下訂單』按鈕時發生錯誤: {e}")
+                fail_reason = f"尚琳官網目前非開放點餐時段或下單異常"
 
             browser.close()
-            log_debug("🏁 Playwright 瀏覽器已自動關閉，訂單流程結束。")
+            log_debug(f"🏁 Playwright 瀏覽器已自動關閉，下單結果: {success_status}")
+            return success_status, fail_reason
     except Exception as e:
         err_msg = f"Playwright Exception (DOM結構可能已變更或逾時): {e}"
         log_debug(f"{err_msg}\n{traceback.format_exc()}")
@@ -454,6 +539,7 @@ def run_playwright(checkout_url, worker_id, items_list=None, product_id=None, qu
             details=f"尚琳官網 Playwright 定位異常: {str(e)}。已自動引導員工直連官網手動填單。",
             worker_id=worker_id
         )
+        return False, "尚琳官網目前非開放點餐時段或連線異常"
 
 def run_playwright_delete_order(worker_id, order_date=None):
     log_debug(f"run_playwright_delete_order thread started. Worker ID: {worker_id}, Date: {order_date}")
@@ -486,10 +572,18 @@ def run_playwright_delete_order(worker_id, order_date=None):
                 page.locator("#search-order-id").fill(str(worker_id))
                 log_debug(f"[取消流程] 已輸入工號: {worker_id}")
 
-            # 填入日期
-            target_date = order_date if order_date else datetime.now().strftime("%Y-%m-%d")
+            # 填入日期 (若未傳入日期且超過 13:00，尚琳官網訂單為預訂明日)
+            if order_date:
+                target_date = order_date
+            else:
+                now = datetime.now()
+                if now.hour >= 13:
+                    target_date = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+                else:
+                    target_date = now.strftime("%Y-%m-%d")
+
             page.evaluate(f"if(document.getElementById('start-date')) document.getElementById('start-date').value = '{target_date}'")
-            log_debug(f"[取消流程] 已選擇日期: {target_date}")
+            log_debug(f"[取消流程] 已選擇查詢日期: {target_date}")
 
             time.sleep(0.5)
 
@@ -542,6 +636,10 @@ try:
     @app.get("/")
     async def serve_index():
         return FileResponse(DIRECTORY / "index.html")
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon():
+        return Response(status_code=204)
 
     @app.get("/api/menu")
     async def get_menu():
@@ -732,19 +830,37 @@ try:
         try:
             order = db.query(OrderDB).filter(OrderDB.order_code == order_code).first()
             if not order:
+                try:
+                    order = db.query(OrderDB).filter(OrderDB.id == int(order_code)).first()
+                except ValueError:
+                    pass
+            if not order:
                 raise HTTPException(status_code=404, detail="Order not found")
+
             # 軟刪除：更改狀態而非直接刪除
             order.status = "已取消 (CANCELED)"
             db.commit()
 
+            # 解析 meals_json
+            try:
+                items_list = json.loads(order.meals_json)
+            except Exception:
+                items_list = []
+
             # 觸發 Playwright 自動前往尚琳官網『訂餐查詢』頁面進行刪除
-            log_debug(f"[取消流程] 已成功軟刪除 ID={order_code}，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號={order.worker_id}")
+            log_debug(f"[取消流程] 已成功軟刪除 ID={order_code}，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號={order.worker_id}, 日期={order.order_date}")
             t = threading.Thread(target=run_playwright_delete_order, args=(order.worker_id, order.order_date), daemon=False)
             t.start()
 
+            # 發送 Teams 取消通知
+            t_teams = threading.Thread(target=send_teams_notification, args=(order.worker_id, order.order_code, items_list, order.total_price, "ORDER_CANCEL"), daemon=False)
+            t_teams.start()
+
             return {"status": "success", "message": "Order canceled and Playwright deletion triggered"}
+        except HTTPException:
+            raise
         except Exception as e:
-            log_debug(f"API Delete Order Exception: {e}")
+            log_debug(f"API Delete Order Exception: {e}\n{traceback.format_exc()}")
             raise HTTPException(status_code=500, detail=str(e))
         finally:
             db.close()
@@ -780,9 +896,9 @@ try:
             else:
                 checkout_url = f"https://www.slk9898.com.tw/checkout/?billing_first_name={encoded_id}&billing_company={encoded_company}&order_comments={encoded_comments}"
 
-            # 3. 觸發 Playwright 自動化流程（模式 B：將購物車餐點加入尚琳購物車 ➔ 自動按下「立即前往結帳」 ➔ 跳轉至結帳頁 ➔ 自動填入工號）
+            # 3. 觸發 Playwright 自動化流程（模式 B：將購物車餐點加入尚琳購物車 ➔ 自動按下「立即前往結帳」 ➔ 跳轉至結帳頁 ➔ 自動填入工號 ➔ 自動完成下單）
             log_debug(f"[模式 B] 訂單成功落盤 ID={new_order.id}，啟動 Playwright 自動化流程: {emp_id}")
-            t = threading.Thread(target=run_playwright, args=(checkout_url, emp_id, items_dict), daemon=False)
+            t = threading.Thread(target=run_playwright, args=(checkout_url, emp_id, items_dict, None, 1, new_order.order_code, order_req.total_price), daemon=False)
             t.start()
 
             return {
@@ -803,16 +919,13 @@ try:
 
     @app.post("/api/analyze-photo")
     async def analyze_photo_endpoint(req: PhotoAnalyzeRequest):
-        # 讀取地端 AI 伺服器設定與備援金鑰（由 .env 提供，不 Hardcode 預設值）
-        ai_base_url = os.environ.get("AI_SERVER_BASE_URL", "").strip()
-        ai_api_key = os.environ.get("AI_SERVER_API_KEY", "").strip()
-        ai_model = os.environ.get("AI_SERVER_MODEL", "").strip()
-        gemini_api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        # 從環境變數中讀取金鑰（已在啟動時從 .env 加載）
+        api_key = os.environ.get("GEMINI_API_KEY", "").strip()
         mock_mode = os.environ.get("MOCK_MODE", "false").lower() == "true"
         
-        log_debug(f"📸 開始分析照片... (Local Model: {ai_model}, Mock Mode: {mock_mode})")
+        log_debug(f"📸 開始分析照片... (Mock Mode: {mock_mode})")
         
-        # 模擬食物分析結果數據庫（降級備援）
+        # 模擬食物分析結果數據庫
         mock_results = {
             "預設": {"name": "健康雞肉沙拉（模擬）", "protein": 28, "calories": 320, "reason": "根據照片中的雞肉和新鮮蔬菜判斷"},
             "雞胸肉": {"name": "烤雞胸肉套餐（模擬）", "protein": 35, "calories": 380, "reason": "高蛋白低脂肪的優質蛋白質來源"},
@@ -822,106 +935,83 @@ try:
         }
 
         try:
-            if mock_mode:
+            # 如果啟用模擬模式或沒有 API 金鑰，使用模擬結果
+            if mock_mode or not api_key:
                 log_debug("🎭 使用模擬模式返回結果")
-                return {"status": "success", "result": mock_results.get("預設"), "mode": "mock"}
+                mock_result = mock_results.get("預設")
+                return {
+                    "status": "success",
+                    "result": mock_result,
+                    "mode": "mock"
+                }
 
             import requests
-            import re
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={api_key}"
+            payload = {
+                "contents": [{
+                    "parts": [
+                        { "text": "這是一張食物照片。請仔細分析照片中的餐點，辨識所有食材，並以純粹的 JSON 物件格式回傳分析結果（不需要任何 markdown 或說明文字），JSON 必須包含以下四個欄位：\"name\"(繁體中文餐點名稱), \"protein\"(整數，蛋白質克數), \"calories\"(整數，估計熱量大卡), \"reason\"(繁體中文，簡述判斷根據，約30字)。" },
+                        { "inline_data": { "mime_type": req.mime_type or "image/jpeg", "data": req.image_base64 } }
+                    ]
+                }]
+            }
+
+            log_debug(f"📡 向 Gemini API 發送請求...")
+            res = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=30)
             
-            # 優先嘗試地端 OpenAI 相容大模型
-            if ai_base_url and ai_api_key:
-                endpoint_url = f"{ai_base_url.rstrip('/')}/chat/completions"
-                headers = {
-                    "Authorization": f"Bearer {ai_api_key}",
-                    "Content-Type": "application/json"
+            if not res.ok:
+                err_json = res.json() if res.content else {}
+                err_msg = err_json.get("error", {}).get("message", f"HTTP {res.status_code}")
+                log_debug(f"⚠️ Gemini API 返回錯誤 ({res.status_code}): {err_msg}，降級使用模擬數據")
+                # 降級到模擬模式而不是拋出錯誤
+                mock_result = mock_results.get("預設")
+                return {
+                    "status": "success",
+                    "result": mock_result,
+                    "mode": "mock",
+                    "note": f"API 失敗，使用模擬數據 (HTTP {res.status_code})"
                 }
-                
-                # 提示詞要求純 JSON 回應
-                prompt_text = "這是一張食物照片。請仔細分析照片或餐點特徵，辨識食材，並以純粹的 JSON 物件格式回傳分析結果（不要包含任何 markdown 或說明文字），JSON 必須包含以下四個欄位：\"name\"(繁體中文餐點名稱), \"protein\"(整數，蛋白質克數), \"calories\"(整數，估計熱量大卡), \"reason\"(繁體中文，簡述判斷根據，約30字)。"
-                
-                payload = {
-                    "model": ai_model,
-                    "messages": [
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": prompt_text},
-                                {"type": "image_url", "image_url": {"url": f"data:{req.mime_type or 'image/jpeg'};base64,{req.image_base64}"}}
-                            ]
-                        }
-                    ],
-                    "temperature": 0.2
-                }
-                
-                log_debug(f"📡 向地端 AI 模型 ({ai_model}) 發送請求...")
-                try:
-                    res = requests.post(endpoint_url, json=payload, headers=headers, timeout=40)
-                    if res.ok:
-                        data = res.json()
-                        result_text = data["choices"][0]["message"]["content"]
-                        log_debug(f"✅ 地端 AI 響應成功")
-                        json_match = re.search(r"\{[\s\S]*\}", result_text)
-                        if json_match:
-                            parsed = json.loads(json_match.group(0))
-                            return {
-                                "status": "success",
-                                "result": {
-                                    "name": parsed.get("name", "未知餐點"),
-                                    "protein": int(parsed.get("protein", 0)),
-                                    "calories": int(parsed.get("calories", 0)),
-                                    "reason": parsed.get("reason", "地端 AI 分析完成")
-                                },
-                                "mode": "real"
-                            }
-                except Exception as local_ai_err:
-                    log_debug(f"⚠️ 地端 AI 視覺調用提示/未支援圖片: {local_ai_err}")
 
-            # 備援：若有配置 Gemini API
-            if gemini_api_key:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={gemini_api_key}"
-                payload = {
-                    "contents": [{
-                        "parts": [
-                            { "text": "這是一張食物照片。請仔細分析照片中的餐點，辨識所有食材，並以純粹的 JSON 物件格式回傳分析結果（不需要任何 markdown 或說明文字），JSON 必須包含以下四個欄位：\"name\"(繁體中文餐點名稱), \"protein\"(整數，蛋白質克數), \"calories\"(整數，估計熱量大卡), \"reason\"(繁體中文，簡述判斷根據，約30字)。" },
-                            { "inline_data": { "mime_type": req.mime_type or "image/jpeg", "data": req.image_base64 } }
-                        ]
-                    }]
+            data = res.json()
+            result_text = data["candidates"][0]["content"]["parts"][0]["text"]
+            log_debug(f"✅ Gemini API 響應成功")
+            
+            import re
+            json_match = re.search(r"\{[\s\S]*\}", result_text)
+            if not json_match:
+                log_debug(f"⚠️ 無法從回應中提取 JSON，降級使用模擬數據")
+                # 降級到模擬模式而不是拋出錯誤
+                mock_result = mock_results.get("預設")
+                return {
+                    "status": "success",
+                    "result": mock_result,
+                    "mode": "mock",
+                    "note": "無法解析 AI 回應，使用模擬數據"
                 }
-                log_debug(f"📡 嘗試備援 Gemini API 發送請求...")
-                res = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=20)
-                if res.ok:
-                    data = res.json()
-                    result_text = data["candidates"][0]["content"]["parts"][0]["text"]
-                    json_match = re.search(r"\{[\s\S]*\}", result_text)
-                    if json_match:
-                        parsed = json.loads(json_match.group(0))
-                        return {
-                            "status": "success",
-                            "result": {
-                                "name": parsed.get("name", "未知餐點"),
-                                "protein": int(parsed.get("protein", 0)),
-                                "calories": int(parsed.get("calories", 0)),
-                                "reason": parsed.get("reason", "AI 分析完成")
-                            },
-                            "mode": "real"
-                        }
-
-            # 降級至模擬數據
-            log_debug("⚠️ AI 呼叫未成功，優雅降級使用模擬數據")
+            
+            parsed = json.loads(json_match.group(0))
+            log_debug(f"✅ 成功解析 AI 回應: {parsed}")
+            
+            return {
+                "status": "success",
+                "result": {
+                    "name": parsed.get("name", "未知餐點"),
+                    "protein": int(parsed.get("protein", 0)),
+                    "calories": int(parsed.get("calories", 0)),
+                    "reason": parsed.get("reason", "AI 分析完成")
+                },
+                "mode": "real"
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            error_detail = f"{str(e)}\n{traceback.format_exc()}"
+            log_debug(f"❌ Gemini Proxy 錯誤: {error_detail}，降級使用模擬數據")
+            # 最後的降級方案：總是返回模擬結果而不是錯誤
             mock_result = mock_results.get("預設")
             return {
                 "status": "success",
                 "result": mock_result,
-                "mode": "mock",
-                "note": "AI 服務暫時無法解析，已啟動備援模式"
-            }
-        except Exception as e:
-            error_detail = f"{str(e)}\n{traceback.format_exc()}"
-            log_debug(f"❌ 分析照片發生未預期錯誤: {error_detail}，降級使用模擬數據")
-            return {
-                "status": "success",
-                "result": mock_results.get("預設"),
                 "mode": "mock",
                 "note": f"分析過程出錯，使用模擬數據: {str(e)}"
             }
@@ -945,6 +1035,10 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
 
     def do_GET(self):
         clean_path = self.path.split('?')[0].rstrip('/')
+        if clean_path == '/favicon.ico':
+            self.send_response(204)
+            self.end_headers()
+            return
         if clean_path in ['/api/orders', '/api/history']:
             query_components = parse_qs(urlparse(self.path).query)
             worker_id = query_components.get('worker_id', [None])[0] or query_components.get('employee_id', [None])[0]
@@ -1052,6 +1146,431 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
         self._set_cors_headers()
         self.end_headers()
 
+# ==========================================
+# 09:30 AM Daily Teams Recommendation & 1-Click Order
+# ==========================================
+def get_top_meals_last_7_days():
+    """查詢過去 7 天內，各工號訂購次數最多的餐點"""
+    db = SessionLocal()
+    try:
+        seven_days_ago = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        orders = db.query(OrderDB).filter(
+            OrderDB.order_date >= seven_days_ago,
+            ~OrderDB.status.like("%CANCELED%"),
+            ~OrderDB.status.like("%取消%")
+        ).all()
+
+        worker_meal_counts = {}
+        for ord_item in orders:
+            w_id = ord_item.worker_id
+            if w_id not in worker_meal_counts:
+                worker_meal_counts[w_id] = {}
+            try:
+                meals = json.loads(ord_item.meals_json) if isinstance(ord_item.meals_json, str) else ord_item.meals_json
+                if isinstance(meals, list):
+                    for m in meals:
+                        name = m.get("name", "推薦餐點")
+                        qty = m.get("qty", 1)
+                        price = m.get("price", 0)
+                        if price <= 0:
+                            continue
+                        protein = m.get("protein", 30)
+                        pid = m.get("id") or m.get("product_id")
+                        if name not in worker_meal_counts[w_id]:
+                            worker_meal_counts[w_id][name] = {"count": 0, "price": price, "protein": protein, "pid": pid}
+                        worker_meal_counts[w_id][name]["count"] += qty
+            except Exception as e:
+                log_debug(f"Parse meals_json error: {e}")
+
+        top_meals = {}
+        for w_id, meals in worker_meal_counts.items():
+            if meals:
+                sorted_m = sorted(meals.items(), key=lambda x: x[1]["count"], reverse=True)
+                meal_name, info = sorted_m[0]
+                top_meals[w_id] = {
+                    "meal_name": meal_name,
+                    "count": info["count"],
+                    "price": info["price"],
+                    "protein": info["protein"],
+                    "pid": info["pid"]
+                }
+        return top_meals
+    except Exception as e:
+        log_debug(f"get_top_meals_last_7_days error: {e}")
+        return {}
+    finally:
+        db.close()
+
+def send_daily_0930_teams_recommendations():
+    """發送 09:30 個人化一週熱門餐點推薦 + 1 鍵點餐按鈕卡片至 Teams"""
+    teams_url = os.environ.get("TEAMS_WEBHOOK_URL", "").strip()
+    if not teams_url:
+        log_debug("⚠️ 未設定 TEAMS_WEBHOOK_URL，跳過 09:30 推薦推送")
+        return
+
+    top_meals = get_top_meals_last_7_days()
+    if not top_meals:
+        log_debug("ℹ️ 過去一週無點餐紀錄，跳過 09:30 推薦推送")
+        return
+
+    try:
+        import requests, urllib.parse
+        facts = []
+        actions = []
+        host_url = os.environ.get("HOST_URL", "http://localhost:8000")
+
+        for w_id, info in top_meals.items():
+            meal_name = info["meal_name"]
+            price = info["price"]
+            protein = info["protein"]
+            facts.append({"title": f"工號 {w_id} 一週最愛", "value": f"{meal_name} (NT$ {price} | {protein}g 蛋白質)"})
+
+            encoded_meal = urllib.parse.quote(meal_name)
+            quick_url = f"{host_url}/api/quick-order-web?worker_id={w_id}&meal_name={encoded_meal}&price={price}&protein={protein}"
+            actions.append({
+                "type": "Action.OpenUrl",
+                "title": f"🍱 工號 {w_id} 一鍵下訂【{meal_name}】",
+                "url": quick_url
+            })
+
+        card = {
+            "type": "message",
+            "attachments": [
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "contentUrl": None,
+                    "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptivecard.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.2",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "⏰ 早上 09:30 尚琳廚苑 - 每日個人化推薦預訂選單",
+                                "weight": "Bolder",
+                                "size": "Medium",
+                                "color": "Accent"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": "根據過去一週的點餐紀錄，系統已為您整理出最常點的招牌餐點！點擊下方按鈕即可直接一鍵完成下單：",
+                                "wrap": True
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": facts
+                            }
+                        ],
+                        "actions": actions[:5]
+                    }
+                }
+            ]
+        }
+        res = requests.post(teams_url, json=card, headers={"Content-Type": "application/json"}, timeout=10)
+        log_debug(f"📡 09:30 Teams 推薦推播完成 ({res.status_code})")
+    except Exception as e:
+        log_debug(f"send_daily_0930_teams_recommendations error: {e}")
+
+@app.get("/api/quick-order-web")
+async def quick_order_web(worker_id: str, meal_name: str, price: int = 80, protein: int = 34):
+    """Teams 點擊一鍵下訂時開啟的網頁/API：自動下單並啟動 Playwright 到尚琳結帳"""
+    try:
+        items_dict = [{"id": 1, "name": meal_name, "price": price, "protein": protein, "qty": 1}]
+        
+        # 1. 寫入 DB
+        new_order = save_order_to_db(
+            employee_id=worker_id,
+            items=items_dict,
+            total_price=price,
+            total_protein=protein,
+            status="已轉至尚琳結帳"
+        )
+
+        # 2. 建立結帳 URL 與 Playwright 下單
+        first_pid = get_product_id_for_item(items_dict[0])
+        import urllib.parse
+        encoded_id = urllib.parse.quote(str(worker_id))
+        encoded_company = urllib.parse.quote(f"工號:{worker_id}")
+        encoded_comments = urllib.parse.quote(f"員工工號:{worker_id}")
+        checkout_url = f"https://www.slk9898.com.tw/checkout/?add-to-cart={first_pid}&quantity=1&billing_first_name={encoded_id}&billing_company={encoded_company}&order_comments={encoded_comments}"
+
+        # 3. 同步執行 Playwright 尚琳官網下單流程，確認真實成功狀態
+        success, reason = await asyncio.to_thread(run_playwright, checkout_url, worker_id, items_dict, None, 1, new_order.order_code, price)
+
+        from fastapi.responses import HTMLResponse
+
+        if success:
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>尚琳廚苑 - 下單成功</title>
+                <style>
+                    body {{ font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+                    .card {{ background: #1e293b; border-radius: 16px; padding: 40px; text-align: center; max-width: 480px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }}
+                    .icon {{ font-size: 64px; margin-bottom: 20px; }}
+                    h1 {{ color: #4ade80; margin-bottom: 10px; font-size: 24px; }}
+                    p {{ color: #94a3b8; line-height: 1.6; font-size: 16px; }}
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">✅</div>
+                    <h1>工號 {worker_id} 下單成功！</h1>
+                    <p>成功預訂：<strong style="font-size:20px; color:#fff;">{meal_name}</strong> (NT$ {price})</p>
+                </div>
+            </body>
+            </html>
+            """
+        else:
+            # 尚琳官網下單失敗，同步將 DB 中的訂單標記為已取消
+            try:
+                db = SessionLocal()
+                ord_db = db.query(OrderDB).filter(OrderDB.order_code == new_order.order_code).first()
+                if ord_db:
+                    ord_db.status = "已取消 (非開放點餐時段)"
+                    db.commit()
+                db.close()
+            except Exception:
+                pass
+
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <title>尚琳廚苑 - 下單失敗</title>
+                <style>
+                    body {{ font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+                    .card {{ background: #1e293b; border-radius: 16px; padding: 40px; text-align: center; max-width: 480px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); border: 2px solid #ef4444; }}
+                    .icon {{ font-size: 64px; margin-bottom: 20px; }}
+                    h1 {{ color: #f87171; margin-bottom: 10px; font-size: 24px; }}
+                    p {{ color: #cbd5e1; line-height: 1.6; font-size: 16px; }}
+                    .reason {{ color: #fbbf24; font-weight: bold; background: #334155; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 15px; }}
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">❌</div>
+                    <h1>工號 {worker_id} 下單失敗</h1>
+                    <p>餐點：<strong>{meal_name}</strong></p>
+                    <div class="reason">⚠️ {reason}</div>
+                    <p style="font-size:14px; color:#94a3b8;">尚琳官網有固定開放點餐時段限制，請於開放時段內再試。</p>
+                </div>
+            </body>
+            </html>
+            """
+        return HTMLResponse(content=html_content)
+    except Exception as e:
+        log_debug(f"quick_order_web error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+def get_recent_group_recommendation_history():
+    history_file = DIRECTORY / "group_recommendations_history.json"
+    if history_file.exists():
+        try:
+            with open(history_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+                return [item for item in data if item.get("date", "") >= cutoff]
+        except Exception as e:
+            log_debug(f"Read history error: {e}")
+    return []
+
+def save_group_recommendation_history(history_list):
+    history_file = DIRECTORY / "group_recommendations_history.json"
+    try:
+        with open(history_file, "w", encoding="utf-8") as f:
+            json.dump(history_list, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        log_debug(f"Save history error: {e}")
+
+def send_daily_0930_group_channel_recommendation():
+    """每天 09:30 隨機挑選一週內不重複的主廚推薦餐點，發送至『智饗』群組頻道"""
+    channel_url = os.environ.get("TEAMS_CHANNEL_WEBHOOK_URL", "").strip()
+    if not channel_url:
+        log_debug("⚠️ 未設定 TEAMS_CHANNEL_WEBHOOK_URL，跳過智饗群組 09:30 推薦推送")
+        return
+
+    try:
+        menu_file = DIRECTORY / "menu.json"
+        if not menu_file.exists():
+            return
+        with open(menu_file, "r", encoding="utf-8") as f:
+            menu = json.load(f)
+
+        valid_meals = [m for m in menu if m.get("price", 0) > 0 and m.get("is_available", True)]
+        if not valid_meals:
+            return
+
+        recent_history = get_recent_group_recommendation_history()
+        recent_names = {item["name"] for item in recent_history}
+
+        # 篩選過去 7 天尚未推薦過的餐點
+        candidates = [m for m in valid_meals if m["name"] not in recent_names]
+        if not candidates:
+            candidates = valid_meals
+
+        import random, urllib.parse
+        selected = random.choice(candidates)
+        meal_name = selected["name"]
+        price = selected.get("price", 80)
+        protein = selected.get("protein", 30)
+        calories = selected.get("calories", 650)
+        reason = selected.get("protein_breakdown") or "優質蛋白質與均衡美味的主廚特選便當！"
+
+        recent_history.append({"date": datetime.now().strftime("%Y-%m-%d"), "name": meal_name})
+        save_group_recommendation_history(recent_history)
+
+        host_url = os.environ.get("HOST_URL", "http://localhost:8000")
+        encoded_meal = urllib.parse.quote(meal_name)
+        quick_input_url = f"{host_url}/api/quick-order-form?meal_name={encoded_meal}&price={price}&protein={protein}"
+
+        card = {
+            "type": "message",
+            "attachments": [
+                {
+                    "contentType": "application/vnd.microsoft.card.adaptive",
+                    "contentUrl": None,
+                    "content": {
+                        "$schema": "http://adaptivecards.io/schemas/adaptivecard.json",
+                        "type": "AdaptiveCard",
+                        "version": "1.2",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": f"🍱 今日推薦主餐：{meal_name}",
+                                "weight": "Bolder",
+                                "size": "Medium"
+                            },
+                            {
+                                "type": "TextBlock",
+                                "text": f"原價：NT$ {price}",
+                                "weight": "Bolder",
+                                "size": "Normal",
+                                "color": "Good"
+                            }
+                        ],
+                        "actions": [
+                            {
+                                "type": "Action.OpenUrl",
+                                "title": "🍱 點擊按鈕下訂",
+                                "url": quick_input_url
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        res = requests.post(channel_url, json=card, headers={"Content-Type": "application/json"}, timeout=10)
+        log_debug(f"📡 智饗群組頻道 09:30 隨機推薦推播完成 ({res.status_code}): {meal_name}")
+    except Exception as e:
+        log_debug(f"send_daily_0930_group_channel_recommendation error: {e}")
+
+@app.get("/api/quick-order-form")
+async def quick_order_form(meal_name: str, price: int = 80, protein: int = 34):
+    """智饗群組點擊推薦餐點時開啟的網頁：供同仁輸入工號一鍵下單"""
+    from fastapi.responses import HTMLResponse
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>智饗群組 - 快速點餐</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body {{ font-family: sans-serif; background: #0f172a; color: white; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+            .card {{ background: #1e293b; border-radius: 16px; padding: 40px; text-align: center; width: 90%; max-width: 420px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }}
+            .icon {{ font-size: 56px; margin-bottom: 15px; }}
+            h1 {{ color: #38bdf8; margin-bottom: 10px; font-size: 22px; }}
+            p {{ color: #94a3b8; font-size: 15px; line-height: 1.5; }}
+            input {{ width: 100%; padding: 14px; margin: 20px 0; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 16px; box-sizing: border-box; text-align: center; }}
+            button {{ width: 100%; padding: 14px; border-radius: 8px; border: none; background: #3b82f6; color: white; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }}
+            button:hover {{ background: #2563eb; }}
+            .meal-tag {{ background: #334155; padding: 8px 16px; border-radius: 20px; color: #fbbf24; font-weight: bold; display: inline-block; margin-top: 5px; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="icon">🍱🌟</div>
+            <h1>尚琳廚苑 - 智饗今日推薦餐點</h1>
+            <div class="meal-tag">{meal_name} (NT$ {price})</div>
+            <form action="/api/quick-order-web" method="get">
+                <input type="hidden" name="meal_name" value="{meal_name}">
+                <input type="hidden" name="price" value="{price}">
+                <input type="hidden" name="protein" value="{protein}">
+                <input type="text" name="worker_id" placeholder="請輸入您的取餐工號" required autofocus>
+                <button type="submit">🚀 一鍵確認下單</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    """
+    return HTMLResponse(content=html_content)
+
+@app.post("/api/trigger-daily-recommendations")
+async def trigger_daily_recommendations():
+    """手動觸發 09:30 Teams 個人私訊與智饗群組推薦推送測試"""
+    t1 = threading.Thread(target=send_daily_0930_teams_recommendations, daemon=False)
+    t1.start()
+    t2 = threading.Thread(target=send_daily_0930_group_channel_recommendation, daemon=False)
+    t2.start()
+    return {"status": "success", "message": "已成功同時觸發 09:30 個人私訊與智饗群組頻道推薦推送！"}
+
+def run_daily_0930_scheduler():
+    """每天 09:30 自動檢測並發送 Teams 個人與智饗群組推薦選單"""
+    last_pushed_date = ""
+    while True:
+        try:
+            now = datetime.now()
+            today_str = now.strftime("%Y-%m-%d")
+            time_str = now.strftime("%H:%M")
+            if time_str >= "09:30" and last_pushed_date != today_str:
+                log_debug(f"⏰ 檢測到時間為 {time_str} 且今日尚未推播！自動補發今日 Teams 個人與智饗群組點餐推薦選單...")
+                send_daily_0930_teams_recommendations()
+                send_daily_0930_group_channel_recommendation()
+                last_pushed_date = today_str
+        except Exception as e:
+            log_debug(f"0930 Scheduler Exception: {e}")
+        time.sleep(30)
+
+# 啟動 09:30 推薦排程執行緒
+scheduler_0930_thread = threading.Thread(target=run_daily_0930_scheduler, daemon=True)
+scheduler_0930_thread.start()
+
+
+def run_daily_crawler():
+    """每天 09:00 自動爬取尚琳官網菜單，更新 menu.json；啟動時若當天尚未爬取則立刻補跑"""
+    last_crawled_date = ""
+    # 啟動時先跑一次（無論幾點，確保 menu.json 始終是最新的）
+    try:
+        log_debug("🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...")
+        crawler.crawl_slk9898()
+        last_crawled_date = datetime.now().strftime("%Y-%m-%d")
+        log_debug("✅ [Crawler] 啟動補跑完成，menu.json 已更新")
+    except Exception as e:
+        log_debug(f"⚠️ [Crawler] 啟動補跑失敗: {e}")
+
+    while True:
+        try:
+            now = datetime.now()
+            today_str = now.strftime("%Y-%m-%d")
+            time_str  = now.strftime("%H:%M")
+            # 每天 09:00 ~ 09:05 之間觸發（避免重複）
+            if time_str >= "09:00" and last_crawled_date != today_str:
+                log_debug(f"🕷️ [Crawler] 每日定時 09:00 觸發菜單爬蟲 ({time_str})...")
+                crawler.crawl_slk9898()
+                last_crawled_date = today_str
+                log_debug("✅ [Crawler] 每日爬蟲完成，menu.json 已更新")
+        except Exception as e:
+            log_debug(f"⚠️ [Crawler] 排程爬蟲失敗: {e}")
+        time.sleep(60)  # 每分鐘檢查一次
+
+# 啟動每日菜單爬蟲背景執行緒
+crawler_thread = threading.Thread(target=run_daily_crawler, daemon=True)
+crawler_thread.start()
+
 if __name__ == "__main__":
     if app:
         import uvicorn
@@ -1069,16 +1588,3 @@ if __name__ == "__main__":
             print("\n關閉伺服器...")
             httpd.server_close()
 
-def run_daily_crawler():
-    while True:
-        try:
-            log_debug("--- Running Daily Scheduled Crawler ---")
-            crawler.crawl_slk9898()
-        except Exception as e:
-            log_debug(f"Crawler Scheduler Exception: {e}")
-        # Sleep for 24 hours (86400 seconds)
-        time.sleep(86400)
-
-# 啟動每日爬蟲背景執行緒
-crawler_thread = threading.Thread(target=run_daily_crawler, daemon=True)
-crawler_thread.start()
