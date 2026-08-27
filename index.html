@@ -1908,17 +1908,19 @@
         async function deleteOrder(orderId) {
           if (!confirm("確定要取消這筆訂單嗎？取消後需自行重新下單。")) return;
           try {
-            const res = await fetch(`http://localhost:8000/api/orders/${orderId}`, {
+            const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(orderId)}`, {
               method: 'DELETE'
             });
             if (res.ok) {
+              const data = await res.json();
               todayOrderList.value = todayOrderList.value.filter(o => o.id !== orderId);
-              showToastFn("🗑️ 訂單已取消！");
+              showToastFn(data.message || "🗑️ 訂單已從尚琳官網取消！");
               if (currentUser.value.id) {
                 fetchUserData(currentUser.value.id);
               }
             } else {
-              showToastFn("⚠️ 取消訂單失敗");
+              const data = await res.json().catch(() => ({}));
+              showToastFn(`⚠️ ${data.detail || '尚琳官網取消訂單失敗'}`);
             }
           } catch (e) {
             console.error("Delete order error", e);
@@ -1929,7 +1931,7 @@
         async function editOrder(order) {
           if (!confirm("修改訂單會將原本的訂單取消，並將餐點加回購物車讓您重新結帳。確定要修改嗎？")) return;
           try {
-            const res = await fetch(`http://localhost:8000/api/orders/${order.id}`, {
+            const res = await fetch(`${API_BASE}/api/orders/${encodeURIComponent(order.id)}`, {
               method: 'DELETE'
             });
             if (res.ok) {

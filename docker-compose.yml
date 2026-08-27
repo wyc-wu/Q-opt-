@@ -11,7 +11,5 @@ services:
     volumes:
       # 持久化資料庫、日誌與環境設定
       - ./orders.db:/app/orders.db
-      - ./admin_alerts.json:/app/admin_alerts.json
       - ./playwright_debug.log:/app/playwright_debug.log
       - ./.env:/app/.env
-      - ./menu.json:/app/menu.json

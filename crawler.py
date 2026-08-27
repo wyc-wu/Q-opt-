@@ -150,77 +150,46 @@ def crawl_slk9898():
                     # --- WooCommerce product ID ---
                     product_id = int(item.query_selector("[data-product_id]").get_attribute("data-product_id") if item.query_selector("[data-product_id]") else 0)
 
-                    # --- 真實品名翻譯字典 (覆蓋官網的行銷術語) ---
-                    NAME_OVERRIDES = {
-                        69395: "泰式檸檬雞腿排",
-                        11331: "港式蔥油雞飯",
-                        83669: "紅燒無骨滷排飯",
-                        91945: "川味家常肉絲飯",
-                        98414: "炙火炭烤戰斧豬排",
-                        103396: "豆鼓蒸嫩排飯",
-                        16931: "明火炭烤挪威鯖魚飯",
-                        13058: "菩提蔬食便當（蛋奶素）",
-                        14626: "超夯酥炸大雞腿飯",
-                        54520: "碳烤溫體大雞腿",
-                        95253: "西西里島厚切里肌嫩豬扒",
-                        102656: "椒麻腱子肉飯",
-                    }
+                    # --- 所有商品都交給 AI 判斷標準菜名，不維護 product_id 品名字典 ---
+                    ai_result = _ai_extract_meal_name(raw_title, price)
 
-                    # --- 判斷商品名稱與類型 ---
-                    if product_id in NAME_OVERRIDES:
-                        short_name = NAME_OVERRIDES[product_id]
-                        raw_title = short_name # 同步改寫 raw_title 讓後方的蛋白質猜測也能精準命中
+                    if ai_result == "":
+                        # AI 明確判定為廣告/公告/非餐點，直接略過此商品
+                        print(f"    ⏭️ 略過非餐點商品: {raw_title[:40]}")
+                        continue
+
+                    if ai_result:
+                        short_name = ai_result
                     else:
-                        # ── Step 0: 呼叫 Gemini AI 自動判斷菜名 ──────────────────────────
-                        ai_result = _ai_extract_meal_name(raw_title, price)
+                        # AI 失敗或未設定 API Key 時，保留規則 fallback。
+                        bracket_match = re.search(r'【([^】]+)】', raw_title)
+                        slash_match = re.search(r'/\*([^*]+)\*/', raw_title)
+                        tilde_match = re.search(r'~~([^~]+)~~', raw_title)
 
-                        if ai_result == "":
-                            # AI 明確判定為廣告/公告/非餐點，直接略過此商品
-                            print(f"    ⏭️ 略過非餐點商品: {raw_title[:40]}")
-                            continue
-
-                        if ai_result:
-                            # AI 成功解析出菜名，直接採用
-                            short_name = ai_result
+                        if bracket_match:
+                            short_name = bracket_match.group(1).strip()
+                        elif slash_match:
+                            short_name = slash_match.group(1).strip()
+                        elif tilde_match:
+                            short_name = tilde_match.group(1).strip()
                         else:
-                            # AI 失敗 / 無 API Key → fallback 到規則解析
-                            # ── Step 1: 優先提取括號中的真實菜名 ────────────────────────
-                            bracket_match = re.search(r'【([^】]+)】', raw_title)
-                            slash_match   = re.search(r'/\*([^*]+)\*/', raw_title)
-                            tilde_match   = re.search(r'~~([^~]+)~~', raw_title)
-
-                            if bracket_match:
-                                short_name = bracket_match.group(1).strip()
-                            elif slash_match:
-                                short_name = slash_match.group(1).strip()
-                            elif tilde_match:
-                                short_name = tilde_match.group(1).strip()
-                            else:
-                                # ── Step 2: 移除開頭行銷前綴詞及後方連接符 ──────────────
-                                _MARKETING_PREFIXES = (
-                                    r'最新商品', r'熱銷推薦', r'熱門推薦', r'今日推薦',
-                                    r'限時特賣', r'超夯熱銷', r'每日精選', r'本日特餐',
-                                )
-                                _prefix_pat = re.compile(
-                                    r'^(?:' + '|'.join(_MARKETING_PREFIXES) + r')'
-                                    r'\s*[-~|/＊＋★•·]\s*',
-                                    re.UNICODE
-                                )
-                                cleaned = _prefix_pat.sub('', raw_title).strip()
-
-                                # ── Step 3: 切段後選最佳段 ───────────────────────────────
-                                _MARKETING_WORDS = {'最新商品', '熱銷推薦', '熱門推薦', '今日推薦',
-                                                    '限時特賣', '超夯熱銷', '每日精選', '本日特餐'}
-                                parts = re.split(r'[-~|/]+', cleaned)
-                                valid_parts = [
-                                    p.strip('/*! ').strip()
-                                    for p in parts
-                                    if p.strip('/*! ').strip() and p.strip() not in _MARKETING_WORDS
-                                ]
-                                if valid_parts:
-                                    short_name = max(valid_parts, key=len)
-                                else:
-                                    short_name = cleaned.strip('/*! ').strip() or raw_title[:30]
+                            marketing_prefixes = (
+                                r'最新商品', r'熱銷推薦', r'熱門推薦', r'今日推薦',
+                                r'限時特賣', r'超夯熱銷', r'每日精選', r'本日特餐',
+                            )
+                            prefix_pattern = re.compile(
+                                r'^(?:' + '|'.join(marketing_prefixes) + r')'
+                                r'\s*[-~|/＊＋★•·]\s*',
+                                re.UNICODE
+                            )
+                            cleaned = prefix_pattern.sub('', raw_title).strip()
+                            parts = re.split(r'[-~|/]+', cleaned)
+                            valid_parts = [
+                                part.strip('/*! ').strip()
+                                for part in parts
+                                if part.strip('/*! ').strip()
+                            ]
+                            short_name = max(valid_parts, key=len) if valid_parts else raw_title[:30]
 
                     # 簡單猜測蛋白質含量，因為官網沒有標示
                     protein = 25
@@ -266,25 +235,10 @@ def crawl_slk9898():
 
             browser.close()
 
-        # 將真實資料寫入 menu.json
-        out_file = Path(__file__).parent / "menu.json"
-        with open(out_file, "w", encoding="utf-8") as f:
-            json.dump(menu_data, f, ensure_ascii=False, indent=2)
-
         print(f"\n{'=' * 60}")
         print(f"🎉 成功爬取 {len(menu_data)} 項餐點！")
-        print(f"📁 已儲存至 {out_file}")
+        print("📡 菜單已更新至伺服器記憶體快取")
         print(f"{'=' * 60}")
-
-        # 自動執行 Gemini AI 營養精算
-        try:
-            import subprocess
-            print("\n🤖 正在調用 Gemini AI 進行精確蛋白質與熱量分析...")
-            analyzer_script = Path(__file__).parent / "analyze_menu_protein.py"
-            if analyzer_script.exists():
-                subprocess.run([sys.executable, str(analyzer_script)], check=False)
-        except Exception as ai_err:
-            print(f"AI Nutrition Analysis Warning: {ai_err}")
 
         return menu_data
     except Exception as e:

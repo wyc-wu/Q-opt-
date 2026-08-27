@@ -10,7 +10,6 @@
 | :--- | :---: | :--- |
 | **`index.html`** | 🟡 修改 | 1. API 網址全面動態化 (`window.location.origin`)<br>2. 拍照分析標籤由 `(Gemini Vision)` 改為 `(AI)` |
 | **`.env`** | 🟡 修改 | 增加地端大模型 (GPUStack / `qwen3.6-27b-awq`) 連線設定 |
-| **`analyze_menu_protein.py`** | 🟡 修改 | 由 Gemini API 改為標準 OpenAI 相容 API 協定呼叫地端模型 |
 | **`server.py`** | 🟡 修改 | 拍照分析端點改接地端模型，並將金鑰/IP 改由 `.env` 完全接管 |
 | **`docker-compose.yml`** | 🟢 新增 | Docker Compose 服務編排設定（Port 8010、時區、Volume 掛載） |
 | **`Dockerfile`** | 🟢 新增 | Linux 容器映像檔建置定義（含 Playwright Chromium 依賴庫） |
@@ -60,12 +59,6 @@
 
 ---
 
-### 3. `analyze_menu_protein.py`（菜單營養精算切換為地端模型）
-* **修改內容**：
-  * 改採標準 OpenAI-compatible Chat Completions 協定 (`POST /v1/chat/completions`)。
-  * 移除程式碼中 Hardcode 的預設 IP 與 Token，完全由 `.env` 驅動。
-  * 強化正則表達式 JSON 陣列提取（`re.search(r"\[[\s\S]*\]", text)`），避免模型回傳 ````json` 標記時解析報錯。
-
 ---
 
 ### 4. `server.py`（後端 AI 端點安全強化）
@@ -84,9 +77,7 @@
   * 映射外部連接埠 **`8010:8000`**（避免與伺服器既有 8000 Port 衝突）。
   * 配置持久化掛載（Volumes）：
     * `./orders.db:/app/orders.db`
-    * `./menu.json:/app/menu.json`
     * `./.env:/app/.env`
-    * `./admin_alerts.json:/app/admin_alerts.json`
     * `./playwright_debug.log:/app/playwright_debug.log`
 * **`requirements.txt`**：
   ```text

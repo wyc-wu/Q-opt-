@@ -59,6 +59,16 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 PORT = 8000
 DIRECTORY = Path(__file__).resolve().parent
+menu_cache = []
+menu_cache_lock = threading.Lock()
+admin_alert_cache = []
+admin_alert_cache_lock = threading.Lock()
+group_recommendation_cache = []
+group_recommendation_cache_lock = threading.Lock()
+
+def get_menu_cache():
+    with menu_cache_lock:
+        return [dict(item) for item in menu_cache]
 
 def log_debug(message):
     try:
@@ -102,7 +112,7 @@ class OrderDB(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
 def log_admin_alert(alert_type: str, details: str, worker_id: str = ""):
-    alert_file = DIRECTORY / "admin_alerts.json"
+    global admin_alert_cache
     new_alert = {
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "type": alert_type,
@@ -111,13 +121,8 @@ def log_admin_alert(alert_type: str, details: str, worker_id: str = ""):
         "status": "UNREAD"
     }
     try:
-        alerts = []
-        if alert_file.exists():
-            with open(alert_file, "r", encoding="utf-8") as f:
-                alerts = json.load(f)
-        alerts.insert(0, new_alert)
-        with open(alert_file, "w", encoding="utf-8") as f:
-            json.dump(alerts[:50], f, ensure_ascii=False, indent=2)
+        with admin_alert_cache_lock:
+            admin_alert_cache = [new_alert] + admin_alert_cache[:49]
     except Exception as e:
         log_debug(f"Failed to log admin alert: {e}")
 
@@ -572,17 +577,16 @@ def run_playwright_delete_order(worker_id, order_date=None):
                 page.locator("#search-order-id").fill(str(worker_id))
                 log_debug(f"[取消流程] 已輸入工號: {worker_id}")
 
-            # 填入日期 (若未傳入日期且超過 13:00，尚琳官網訂單為預訂明日)
+            # 填入查詢日期；訂單資料已保存實際下單日期，因此不自行改成隔天。
             if order_date:
                 target_date = order_date
             else:
                 now = datetime.now()
-                if now.hour >= 13:
-                    target_date = (now + timedelta(days=1)).strftime("%Y-%m-%d")
-                else:
-                    target_date = now.strftime("%Y-%m-%d")
+                target_date = now.strftime("%Y-%m-%d")
 
-            page.evaluate(f"if(document.getElementById('start-date')) document.getElementById('start-date').value = '{target_date}'")
+            page.locator("#start-date").fill(target_date)
+            if page.locator("#end-date").count() > 0:
+                page.locator("#end-date").fill(target_date)
             log_debug(f"[取消流程] 已選擇查詢日期: {target_date}")
 
             time.sleep(0.5)
@@ -592,27 +596,38 @@ def run_playwright_delete_order(worker_id, order_date=None):
             if search_btn.count() > 0:
                 search_btn.click(force=True)
                 log_debug("[取消流程] 已按下『查詢』按鈕，等待搜尋結果...")
-                time.sleep(4)
+                page.wait_for_timeout(4000)
 
-            # 檢查是否有刪除按鈕 (.delete-item-btn 或 文字含有 刪 / 刪除)
-            delete_btns = page.locator(".delete-item-btn, button:has-text('刪'), button:has-text('刪除')").all()
-            if len(delete_btns) > 0:
-                log_debug(f"[取消流程] 找到 {len(delete_btns)} 個刪除按鈕，準備依序自動刪除...")
-                for btn in delete_btns:
+            # 尚琳頁面會在查詢完成後才動態產生刪除按鈕，不能在查詢前快照元素。
+            delete_selector = ".delete-item-btn, .delete-order-btn, [id*='delete'], button:has-text('刪'), button:has-text('刪除'), a:has-text('刪除')"
+            delete_btns = page.locator(delete_selector)
+            delete_count = delete_btns.count()
+            if delete_count > 0:
+                log_debug(f"[取消流程] 找到 {delete_count} 個刪除按鈕，準備依序自動刪除...")
+                for index in range(delete_count):
                     try:
+                        btn = page.locator(delete_selector).nth(index)
                         if btn.is_visible():
                             btn.click(force=True)
                             log_debug(f"✅ [取消流程] 已點擊尚琳官網『刪除』按鈕！")
-                            time.sleep(2)
+                            page.wait_for_timeout(2000)
                     except Exception as btn_err:
                         log_debug(f"Click delete btn info: {btn_err}")
-                log_debug(f"🎉 [取消流程] 已成功於尚琳官網『訂餐查詢』自動刪除工號 {worker_id} 的訂單！")
+                remaining = page.locator(delete_selector).count()
+                success = remaining < delete_count
+                if success:
+                    log_debug(f"🎉 [取消流程] 已成功於尚琳官網『訂餐查詢』自動刪除工號 {worker_id} 的訂單！")
+                else:
+                    log_debug("⚠️ [取消流程] 刪除按鈕點擊後仍存在，無法確認尚琳官網刪除成功")
             else:
                 log_debug(f"ℹ️ [取消流程] 未在尚琳官網搜尋結果中找到可刪除的按鈕（可能已過可取消時段或無訂單）")
+                success = False
 
             browser.close()
+            return success
     except Exception as e:
         log_debug(f"run_playwright_delete_order error: {e}\n{traceback.format_exc()}")
+        return False
 
 # ==========================================
 # 3. FastAPI Server Setup
@@ -643,14 +658,7 @@ try:
 
     @app.get("/api/menu")
     async def get_menu():
-        menu_file = DIRECTORY / "menu.json"
-        if menu_file.exists():
-            try:
-                with open(menu_file, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except Exception as e:
-                return {"error": str(e)}
-        return []
+        return get_menu_cache()
 
     @app.get("/api/subsidy_status")
     async def get_subsidy_status(worker_id: str):
@@ -658,14 +666,9 @@ try:
 
     @app.get("/api/admin/alerts")
     async def get_admin_alerts():
-        alert_file = DIRECTORY / "admin_alerts.json"
-        if alert_file.exists():
-            try:
-                with open(alert_file, "r", encoding="utf-8") as f:
-                    return {"status": "success", "alerts": json.load(f)}
-            except Exception as e:
-                return {"status": "error", "message": str(e)}
-        return {"status": "success", "alerts": []}
+        with admin_alert_cache_lock:
+            alerts = [dict(alert) for alert in admin_alert_cache]
+        return {"status": "success", "alerts": alerts}
 
     class OrderItemSchema(BaseModel):
         id: Optional[int] = 1
@@ -837,10 +840,6 @@ try:
             if not order:
                 raise HTTPException(status_code=404, detail="Order not found")
 
-            # 軟刪除：更改狀態而非直接刪除
-            order.status = "已取消 (CANCELED)"
-            db.commit()
-
             # 解析 meals_json
             try:
                 items_list = json.loads(order.meals_json)
@@ -848,15 +847,24 @@ try:
                 items_list = []
 
             # 觸發 Playwright 自動前往尚琳官網『訂餐查詢』頁面進行刪除
-            log_debug(f"[取消流程] 已成功軟刪除 ID={order_code}，啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號={order.worker_id}, 日期={order.order_date}")
-            t = threading.Thread(target=run_playwright_delete_order, args=(order.worker_id, order.order_date), daemon=False)
-            t.start()
+            log_debug(f"[取消流程] 啟動 Playwright 前往尚琳『訂餐查詢』進行官網刪除: 工號={order.worker_id}, 日期={order.order_date}")
+            website_deleted = await asyncio.to_thread(
+                run_playwright_delete_order,
+                order.worker_id,
+                order.order_date
+            )
+            if not website_deleted:
+                raise HTTPException(status_code=502, detail="尚琳官網未確認刪除訂單，未變更本地紀錄")
+
+            # 官網確認刪除後才軟刪除本地紀錄，避免兩邊狀態不一致。
+            order.status = "已取消 (CANCELED)"
+            db.commit()
 
             # 發送 Teams 取消通知
             t_teams = threading.Thread(target=send_teams_notification, args=(order.worker_id, order.order_code, items_list, order.total_price, "ORDER_CANCEL"), daemon=False)
             t_teams.start()
 
-            return {"status": "success", "message": "Order canceled and Playwright deletion triggered"}
+            return {"status": "success", "message": "訂單已從尚琳官網刪除並同步取消"}
         except HTTPException:
             raise
         except Exception as e:
@@ -1367,24 +1375,14 @@ async def quick_order_web(worker_id: str, meal_name: str, price: int = 80, prote
         raise HTTPException(status_code=500, detail=str(e))
 
 def get_recent_group_recommendation_history():
-    history_file = DIRECTORY / "group_recommendations_history.json"
-    if history_file.exists():
-        try:
-            with open(history_file, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-                return [item for item in data if item.get("date", "") >= cutoff]
-        except Exception as e:
-            log_debug(f"Read history error: {e}")
-    return []
+    cutoff = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+    with group_recommendation_cache_lock:
+        return [dict(item) for item in group_recommendation_cache if item.get("date", "") >= cutoff]
 
 def save_group_recommendation_history(history_list):
-    history_file = DIRECTORY / "group_recommendations_history.json"
-    try:
-        with open(history_file, "w", encoding="utf-8") as f:
-            json.dump(history_list, f, ensure_ascii=False, indent=2)
-    except Exception as e:
-        log_debug(f"Save history error: {e}")
+    global group_recommendation_cache
+    with group_recommendation_cache_lock:
+        group_recommendation_cache = [dict(item) for item in history_list]
 
 def send_daily_0930_group_channel_recommendation():
     """每天 09:30 隨機挑選一週內不重複的主廚推薦餐點，發送至『智饗』群組頻道"""
@@ -1394,11 +1392,9 @@ def send_daily_0930_group_channel_recommendation():
         return
 
     try:
-        menu_file = DIRECTORY / "menu.json"
-        if not menu_file.exists():
+        menu = get_menu_cache()
+        if not menu:
             return
-        with open(menu_file, "r", encoding="utf-8") as f:
-            menu = json.load(f)
 
         valid_meals = [m for m in menu if m.get("price", 0) > 0 and m.get("is_available", True)]
         if not valid_meals:
@@ -1541,14 +1537,17 @@ scheduler_0930_thread.start()
 
 
 def run_daily_crawler():
-    """每天 09:00 自動爬取尚琳官網菜單，更新 menu.json；啟動時若當天尚未爬取則立刻補跑"""
+    """每天 09:00 自動爬取尚琳官網菜單並更新記憶體快取。"""
+    global menu_cache
     last_crawled_date = ""
-    # 啟動時先跑一次（無論幾點，確保 menu.json 始終是最新的）
+    # 啟動時先跑一次，讓前端盡快取得當天菜單。
     try:
         log_debug("🕷️ [Crawler] Server 啟動，立即補跑一次菜單爬蟲...")
-        crawler.crawl_slk9898()
+        crawled_menu = crawler.crawl_slk9898()
+        with menu_cache_lock:
+            menu_cache = crawled_menu or []
         last_crawled_date = datetime.now().strftime("%Y-%m-%d")
-        log_debug("✅ [Crawler] 啟動補跑完成，menu.json 已更新")
+        log_debug(f"✅ [Crawler] 啟動補跑完成，記憶體菜單已更新 ({len(menu_cache)} 項)")
     except Exception as e:
         log_debug(f"⚠️ [Crawler] 啟動補跑失敗: {e}")
 
@@ -1560,9 +1559,11 @@ def run_daily_crawler():
             # 每天 09:00 ~ 09:05 之間觸發（避免重複）
             if time_str >= "09:00" and last_crawled_date != today_str:
                 log_debug(f"🕷️ [Crawler] 每日定時 09:00 觸發菜單爬蟲 ({time_str})...")
-                crawler.crawl_slk9898()
+                crawled_menu = crawler.crawl_slk9898()
+                with menu_cache_lock:
+                    menu_cache = crawled_menu or []
                 last_crawled_date = today_str
-                log_debug("✅ [Crawler] 每日爬蟲完成，menu.json 已更新")
+                log_debug(f"✅ [Crawler] 每日爬蟲完成，記憶體菜單已更新 ({len(menu_cache)} 項)")
         except Exception as e:
             log_debug(f"⚠️ [Crawler] 排程爬蟲失敗: {e}")
         time.sleep(60)  # 每分鐘檢查一次

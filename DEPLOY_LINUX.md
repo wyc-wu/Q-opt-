@@ -30,7 +30,7 @@ docker load -i q-opt_v3.0_image.tar
 ### 步驟 3：預先建立掛載檔案（重要！避免 Docker 誤建為資料夾）
 若主機目錄下尚無以下檔案，請先執行 `touch` 建立空檔案，避免 Docker 將單一檔案誤判並自動建立為資料夾：
 ```bash
-touch playwright_debug.log admin_alerts.json menu.json .env
+touch playwright_debug.log .env
 ```
 *(若 `orders.db` 尚未上傳，亦可執行 `touch orders.db`)*
 
@@ -51,10 +51,10 @@ docker compose up -d --remove-orphans
   docker compose down --remove-orphans
 
   # 2. 刪除誤建的資料夾
-  rm -rf playwright_debug.log admin_alerts.json menu.json
+  rm -rf playwright_debug.log
 
   # 3. 重新建立為實體檔案
-  touch playwright_debug.log admin_alerts.json menu.json .env
+  touch playwright_debug.log .env
 
   # 4. 重新啟動
   docker compose up -d
